@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>iKM-Übung Mathematik</title>
+<title>IKM-Übung Mathematik</title>
 <style>
 /* Layout: eine schmale Spalte, eine Sache pro Bildschirm, eine Akzentfarbe. */
 :root {
@@ -675,8 +675,8 @@ table.t tr.click:hover td { background: var(--accent-soft); }
   ];
   T23.forEach((t, i) => (t.id = i + 1));
   const POOLS = {
-    "2025": { name: "iKM 2025", tasks: T25, minutes: 45 },
-    "2023": { name: "iKM 2023", tasks: T23, minutes: 45 },
+    "2025": { name: "IKM 2025", tasks: T25, minutes: 45 },
+    "2023": { name: "IKM 2023", tasks: T23, minutes: 45 },
   };
   let T = T25;
   const TITLES = ["Stromdiagramm: Monate vergleichen", "Dreieck aus drei Seiten", "5/8 : 2", "Körpergrößen: Durchschnitt", "Gleichung zum Laufwettbewerb", "B − 1 = M deuten", "Freibad-Rechnung lesen", "Winkelsumme im Dreieck", "Lage zweier Kreise", "Bruch kürzen", "Dreiecksfläche im Rechteck", "Proportionaler Graph", "Orchester: Anteile", "Projektgruppen: Diagramm wählen", "3,05 Millionen in Ziffern", "Hochschul-Diagramm lesen", "Äpfel: nicht proportional", "Term a : b deuten", "Helfer: Anteil vergleichen", "Himbeer-Graph lesen", "Umfang einer Figur", "Dreiecksfläche im Raster", "Schwimmbecken: Volumen", "Kreise: 40 % weiß", "Trapez und Rechteck", "3/4 : 5/7 begründen"];
@@ -834,7 +834,7 @@ table.t tr.click:hover td { background: var(--accent-soft); }
     const P = POOLS[going ? run.pool : selPool];
     const cards = going ? "" : `<h2 class="sec" style="margin:0 0 10px">Jahrgang wählen</h2><div class="pools">${Object.keys(POOLS).sort().reverse().map((k) => `<button class="pool" data-pool="${k}" aria-pressed="${k === selPool}"><b>${POOLS[k].name}</b><span>${POOLS[k].tasks.length} Aufgaben · ${POOLS[k].minutes} Min</span></button>`).join("")}</div>`;
     $("start").innerHTML = `
-      <h1>iKM-Übung Mathematik</h1>
+      <h1>IKM-Übung Mathematik</h1>
       <p class="lead">Teste dich unter Prüfungsbedingungen. Die Auswertung bekommst du erst ganz am Ende.</p>
       ${cards}
       <div class="facts"><div class="fact"><b>${P.tasks.length}</b><span>Aufgaben</span></div><div class="fact"><b>${P.minutes} min</b><span>Zeit</span></div><div class="fact"><b>Zufällig</b><span>Reihenfolge</span></div></div>
