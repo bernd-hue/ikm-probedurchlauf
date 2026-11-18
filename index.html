@@ -825,8 +825,7 @@ table.t tr.click:hover td { background: var(--accent-soft); }
     catch (e) { if (box) { box.hidden = false; box.value = text; box.focus(); box.select(); } msgEl.textContent = "Bitte den markierten Text mit Strg+C kopieren."; }
   }
   let person = { name: "", klasse: "" };
-  try { const q = JSON.parse(localStorage.getItem("ikm-uebung-person") || "null"); if (q && q.name) person = q; } catch (e) { /* leer */ }
-  const readPerson = () => { if ($("inName")) { person = { name: $("inName").value.replace(/\s+/g, " ").trim().slice(0, 60), klasse: ($("inKlasse").value || "").trim().slice(0, 12) }; try { localStorage.setItem("ikm-uebung-person", JSON.stringify(person)); } catch (e) { /* egal */ } } };
+  const readPerson = () => { if ($("inName")) { person = { name: $("inName").value.replace(/\s+/g, " ").trim().slice(0, 60), klasse: ($("inKlasse").value || "").trim().slice(0, 12) }; } };
   function renderStart() {
     clearInterval(tick); askEnd = false;
     if (run && !run.end && left() <= 0) { finish(true); return; }
@@ -839,7 +838,7 @@ table.t tr.click:hover td { background: var(--accent-soft); }
       ${cards}
       <div class="facts"><div class="fact"><b>${P.tasks.length}</b><span>Aufgaben</span></div><div class="fact"><b>${P.minutes} min</b><span>Zeit</span></div><div class="fact"><b>Zufällig</b><span>Reihenfolge</span></div></div>
       ${going ? `<p class="hello">${P.name}: Dein Test läuft noch. Du hast noch <b>${mmss(left())}</b> Minuten.</p><button class="btn" data-act="resume">${run.round === 2 ? "Weitermachen bei den übersprungenen Aufgaben" : `Weitermachen bei Aufgabe ${run.pos + 1}`}</button><p class="other"><button class="link" data-act="abandon">Test abbrechen und anderen Jahrgang wählen</button></p>`
-        : `<div class="form" style="max-width:520px;margin:0 0 16px"><label>Dein Name<input id="inName" autocomplete="name" maxlength="60" value="${esc(person.name)}"></label><label>Klasse<input id="inKlasse" maxlength="12" placeholder="z. B. 3a" value="${esc(person.klasse)}"></label></div><p class="warn" id="startWarn"></p><button class="btn" data-act="start">${P.name} starten</button>${done ? `<p class="other"><button class="link" data-act="result">Letzte Auswertung ansehen</button></p>` : ""}`}
+        : `<div class="form" style="max-width:520px;margin:0 0 16px"><label>Dein Name<input id="inName" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="60" placeholder="Vor- und Nachname" value="${esc(person.name)}"></label><label>Klasse<input id="inKlasse" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="12" placeholder="z. B. 3a" value="${esc(person.klasse)}"></label></div><p class="warn" id="startWarn"></p><button class="btn" data-act="start">${P.name} starten</button>${done ? `<p class="other"><button class="link" data-act="result">Letzte Auswertung ansehen</button></p>` : ""}`}
       <ul class="rules"><li>Nimm Papier und Stift zum Rechnen.</li><li>Die Uhr startet mit dem Test und lässt sich nicht anhalten.</li><li>Du kannst Aufgaben überspringen. Wenn am Ende noch Zeit ist, kommst du noch einmal zu ihnen.</li><li>Nach Ablauf der Zeit oder nach der letzten Aufgabe wird dein Test automatisch ausgewertet.</li><li>Deine Antworten bleiben auf diesem Gerät.</li></ul>`;
     show("start");
   }
