@@ -954,7 +954,6 @@ table.t tr.click:hover td { background: var(--accent-soft); }
   window.addEventListener("hashchange", () => { if (isTeacher()) renderTeacher(); else renderStart(); });
   if (run && (!run.order || run.order.length !== T.length)) run = null;
   if (run && !run.end && left() <= 0) finish(true);
-  else if (run && run.end) renderResult();
   else renderStart();
   if (isTeacher()) renderTeacher();
 })();
