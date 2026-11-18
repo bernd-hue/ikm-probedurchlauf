@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>iKM-Übung Mathematik</title>
+<style>
+/* Layout: eine schmale Spalte, eine Sache pro Bildschirm, eine Akzentfarbe. */
+:root {
+  --bg: #FFFFFF; --surface: #F4F6F9; --ink: #16202B; --muted: #5A6878; --line: #D8DEE6;
+  --accent: #1F5FBF; --accent-soft: #E9F0FB; --on-accent: #FFFFFF;
+  --ok: #1E7A46; --ok-bg: #E7F4EC; --bad: #B3362B; --bad-bg: #FBECEA;
+  --c1: #2B5C9E; --c2: #A9BDD6; --c3: #2E8B57; --grid-strong: #C9D2DD; --card: #FFFFFF;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12181F; --surface: #1B232D; --ink: #E8EDF3; --muted: #A0B0C2; --line: #2E3A48;
+    --accent: #7FB0F5; --accent-soft: #1D2F4A; --on-accent: #0E1620;
+    --ok: #6CC48F; --ok-bg: #17331F; --bad: #F08A7E; --bad-bg: #3A1F1D;
+    --c1: #7FB0F5; --c2: #47617F; --c3: #6CC48F; --grid-strong: #34424F; --card: #12181F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12181F; --surface: #1B232D; --ink: #E8EDF3; --muted: #A0B0C2; --line: #2E3A48;
+  --accent: #7FB0F5; --accent-soft: #1D2F4A; --on-accent: #0E1620;
+  --ok: #6CC48F; --ok-bg: #17331F; --bad: #F08A7E; --bad-bg: #3A1F1D;
+  --c1: #7FB0F5; --c2: #47617F; --c3: #6CC48F; --grid-strong: #34424F; --card: #12181F;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 17px; line-height: 1.5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 720px; margin: 0 auto; padding-block: 20px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap.wide { max-width: 1080px; }
+.frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; line-height: 1.1; margin: 0 .15em; font-size: .95em; }
+.frac > span:first-child { border-bottom: 2px solid currentColor; padding: 0 .2em; }
+.frac > span:last-child { padding: 0 .2em; }
+
+/* Start */
+h1 { font-size: clamp(28px, 5vw, 36px); line-height: 1.15; margin: 32px 0 10px; letter-spacing: -.01em; text-wrap: balance; }
+.lead { color: var(--muted); margin: 0 0 28px; max-width: 34em; }
+.form { display: grid; grid-template-columns: minmax(0, 1fr) 110px 150px; gap: 12px; max-width: 620px; margin: 0 0 16px; }
+#inCode { text-transform: uppercase; letter-spacing: .08em; }
+.form label { display: grid; gap: 6px; font-weight: 600; font-size: 15px; }
+.form input, .numrow input, select, textarea { border: 1.5px solid var(--line); background: var(--bg); border-radius: 8px; padding: 11px 12px; font-size: 17px; }
+.form input:focus, .numrow input:focus { border-color: var(--accent); }
+.btn { border: 1.5px solid var(--accent); background: var(--accent); color: var(--on-accent); padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 17px; }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+.btn.small { padding: 6px 12px; font-size: 15px; }
+.link { background: none; border: none; color: var(--muted); text-decoration: underline; padding: 8px 2px; font-size: 15px; }
+.home { background: none; border: 1.5px solid var(--line); border-radius: 6px; padding: 4px 10px; font-weight: 600; font-size: 14px; color: var(--muted); }
+.home:hover, .btn.ghost:hover { border-color: var(--muted); }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.hello { font-size: 19px; margin: 0 0 18px; }
+.other { margin: 18px 0 0; }
+.rules { margin: 28px 0 0; padding-left: 1.2em; color: var(--muted); font-size: 15px; display: grid; gap: 4px; max-width: 34em; }
+.teacherlink { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); }
+.warn { color: var(--bad); font-weight: 600; margin: 10px 0 0; font-size: 15px; }
+#warn { min-height: 1.5em; }
+#startWarn { margin: 0 0 12px; }
+#startWarn:empty { display: none; }
+
+/* Aufgabe */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding: 12px 0; }
+.barrow { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 15px; color: var(--muted); }
+.barrow #pos { margin-right: auto; }
+#clock { font-variant-numeric: tabular-nums; color: var(--ink); }
+#clock.low { color: var(--bad); }
+.track { height: 4px; background: var(--line); border-radius: 2px; margin-top: 10px; overflow: hidden; }
+.track > div { height: 100%; background: var(--accent); transition: width .3s ease; }
+.topnav { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; }
+.stem { font-size: 18px; margin-top: 8px; }
+.stem p { margin: 0 0 10px; }
+.q { font-weight: 600; font-size: 20px; line-height: 1.35; margin: 18px 0 14px; }
+.fig { margin: 14px 0 6px; overflow-x: auto; }
+.fig svg { display: block; max-width: 100%; height: auto; }
+svg text { fill: var(--ink); font-family: var(--font); }
+.opts { display: grid; gap: 8px; }
+.opts.grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.opt { display: flex; gap: 12px; align-items: center; text-align: left; background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 12px 14px; font-size: 17px; width: 100%; min-width: 0; }
+.opt:hover:not(:disabled) { border-color: var(--muted); }
+.opt .l { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--muted); color: var(--muted); display: grid; place-items: center; font-weight: 600; font-size: 14px; }
+.opt[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.opt[aria-pressed="true"] .l { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.opt.figopt { flex-direction: column; align-items: stretch; }
+.opt.figopt .l { align-self: flex-start; }
+.opt.figopt svg { width: 100%; height: auto; max-width: none !important; }
+.opt.ok { border-color: var(--ok); background: var(--ok-bg); }
+.opt.bad { border-color: var(--bad); background: var(--bad-bg); }
+.opt:disabled, .months button:disabled, table.rf td.c button:disabled { cursor: default; }
+.tblwrap { overflow-x: auto; }
+table.rf { border-collapse: collapse; width: 100%; font-size: 16px; }
+table.rf th, table.rf td { border-bottom: 1px solid var(--line); padding: 10px; text-align: left; vertical-align: middle; }
+table.rf th { background: var(--surface); font-size: 14px; }
+table.rf .c { text-align: center; width: 80px; }
+table.rf td.c button { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--muted); background: var(--bg); padding: 0; font-weight: 700; }
+table.rf td.c button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+table.rf tr.ok td:first-child { box-shadow: inset 4px 0 0 var(--ok); }
+table.rf tr.bad td:first-child { box-shadow: inset 4px 0 0 var(--bad); }
+table.rf td.why { font-size: 14px; color: var(--muted); min-width: 160px; }
+.months { display: flex; flex-wrap: wrap; gap: 8px; }
+.months button { border: 1.5px solid var(--line); background: var(--bg); border-radius: 8px; padding: 7px 13px; font-weight: 600; font-size: 15px; }
+.months button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.months button.ok { border-color: var(--ok); background: var(--ok-bg); }
+.months button.bad { border-color: var(--bad); background: var(--bad-bg); }
+.numrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.numrow input { width: 200px; font-size: 19px; }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--line); }
+.sub { color: var(--muted); margin: 0 0 12px; font-size: 15px; }
+.formula { font-size: 20px; font-weight: 600; }
+.pricelist, .receipt, .offer { background: var(--surface); border-radius: 8px; padding: 12px 16px; }
+.pricelist table { border-collapse: collapse; } .pricelist td { padding: 2px 16px 2px 0; } .pricelist td:last-child { text-align: right; font-weight: 600; }
+.receipt { font-family: ui-monospace, "Courier New", Courier, monospace; font-size: 15px; max-width: 260px; }
+.receipt .ring { border: 2px solid var(--bad); border-radius: 50%; padding: 0 5px; }
+.figrow { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+.offer { display: inline-block; font-size: 20px; font-weight: 600; line-height: 1.6; padding: 14px 22px; }
+table.plain { border-collapse: collapse; font-size: 16px; }
+table.plain th, table.plain td { border: 1px solid var(--line); padding: 6px 12px; text-align: center; }
+table.plain th { background: var(--surface); }
+
+/* Auswertung */
+.who { color: var(--muted); font-weight: 600; font-size: 15px; margin: 8px 0 0; }
+.score { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 2px 0 6px; }
+.score .big { font-size: 56px; font-weight: 700; line-height: 1.1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.score .of { font-size: 18px; color: var(--muted); font-weight: 600; }
+.meta { color: var(--muted); margin: 0 0 20px; max-width: 38em; }
+.status { padding: 12px 14px; border-radius: 8px; background: var(--surface); font-size: 15px; }
+.status.sent { background: var(--ok-bg); color: var(--ok); font-weight: 600; }
+.status textarea { display: block; width: 100%; font-family: ui-monospace, "Courier New", Courier, monospace; font-size: 14px; min-height: 76px; margin: 8px 0; word-break: break-all; }
+.split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; margin-top: 28px; }
+.col h2 { margin: 0 0 12px; font-size: 17px; }
+.topics { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.topics .t { display: flex; justify-content: space-between; gap: 10px; font-weight: 600; font-size: 15px; }
+.topics .t span:last-child { white-space: nowrap; color: var(--muted); font-variant-numeric: tabular-nums; }
+.topics .b { height: 6px; background: var(--line); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.topics .b div { height: 100%; }
+.good .b div { background: var(--ok); }
+.work .b div { background: var(--bad); }
+.topics p { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+.none { color: var(--muted); font-size: 15px; margin: 0; }
+h2.sec { font-size: 17px; margin: 36px 0 4px; }
+.list { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
+.item { display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 8px; padding: 9px 6px; font-size: 16px; font-variant-numeric: tabular-nums; }
+.item.r { border-color: var(--ok); } .item.r span { color: var(--ok); }
+.item.f { border-color: var(--bad); } .item.f span { color: var(--bad); }
+.item span { font-weight: 700; }
+.yours { margin: 18px 0 0; font-weight: 600; }
+.yours.ok { color: var(--ok); } .yours.bad { color: var(--bad); }
+.sol { background: var(--ok-bg); border-radius: 8px; padding: 14px 16px; margin-top: 12px; }
+.sol h3 { margin: 0 0 6px; font-size: 16px; }
+.sol p { margin: 0 0 8px; } .sol p:last-child { margin-bottom: 0; }
+.msg { font-size: 15px; color: var(--muted); margin: 8px 0 0; }
+
+/* Lehrer-Ansicht */
+.roombox { display: flex; flex-wrap: wrap; gap: 8px 28px; align-items: center; background: var(--surface); border-radius: 8px; padding: 16px 18px; margin-top: 16px; }
+.roombox .lbl { display: block; font-size: 14px; color: var(--muted); font-weight: 600; }
+.roombox .code { font-size: 44px; font-weight: 700; letter-spacing: .08em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.roombox .info { flex: 1 1 280px; min-width: 0; font-size: 15px; }
+.roombox .info p { margin: 0 0 4px; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
+.dot.ok { background: var(--ok); } .dot.bad { background: var(--bad); }
+.t-sec { margin: 32px 0 0; }
+.t-sec h2 { font-size: 22px; margin: 0 0 6px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 14px 0; }
+.cardn { background: var(--surface); border-radius: 8px; padding: 12px 14px; }
+.cardn b { display: block; font-size: 30px; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.cardn span { font-size: 14px; color: var(--muted); }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+table.t { border-collapse: collapse; width: 100%; font-size: 15px; font-variant-numeric: tabular-nums; }
+table.t th, table.t td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+table.t tr:last-child td { border-bottom: none; }
+table.t th { background: var(--surface); font-size: 13px; }
+table.t td.n { text-align: center; }
+table.t tr.click { cursor: pointer; }
+table.t tr.click:hover td { background: var(--accent-soft); }
+.yes, .no, .run { display: inline-block; border-radius: 6px; padding: 1px 7px; font-weight: 600; font-size: 13px; }
+.yes { background: var(--ok-bg); color: var(--ok); }
+.no { background: var(--bad-bg); color: var(--bad); }
+.run { background: var(--accent-soft); color: var(--ink); }
+.codes textarea { width: 100%; min-height: 90px; font-family: ui-monospace, "Courier New", Courier, monospace; font-size: 14px; }
+.detail { margin-top: 14px; border: 1.5px solid var(--accent); border-radius: 8px; padding: 16px 18px; }
+.detail h3 { margin: 0 0 8px; font-size: 19px; }
+.tasks { columns: 2; column-gap: 24px; font-size: 15px; margin: 8px 0 14px; padding: 0; list-style: none; }
+.tasks li { break-inside: avoid; padding: 2px 0; }
+.tasks .m { display: inline-block; width: 22px; font-weight: 700; }
+@media (max-width: 640px) {
+  .opts.grid2, .split, .form { grid-template-columns: minmax(0, 1fr); }
+  .tasks { columns: 1; }
+  table.rf .c { width: 56px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+[hidden] { display: none !important; }
+
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 520px; margin: 0 0 28px; }
+.fact { background: var(--surface); border-radius: 10px; padding: 14px 16px; }
+.fact b { display: block; font-size: 28px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fact span { font-size: 14px; color: var(--muted); }
+.comps { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.comps li { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.comps .h { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 600; }
+.chip { flex: none; border-radius: 999px; padding: 3px 12px; font-size: 14px; font-weight: 700; }
+.chip.ok { background: var(--ok-bg); color: var(--ok); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+.comps .b { height: 6px; background: var(--line); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+.comps .b div { height: 100%; }
+.comps .ok-b div { background: var(--ok); } .comps .bad-b div { background: var(--bad); }
+.comps .n { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+.comps .tip { margin: 6px 0 0; font-size: 15px; }
+.confirm { background: var(--surface); border-radius: 10px; padding: 16px; margin-top: 20px; }
+.confirm p { margin: 0 0 12px; font-weight: 600; }
+@media (max-width: 460px) { .facts { grid-template-columns: minmax(0, 1fr); } .fact { display: flex; align-items: baseline; gap: 10px; } }
+.pools { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; max-width: 520px; margin: 0 0 22px; }
+.pool { text-align: left; background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 2px; }
+.pool b { font-size: 19px; } .pool span { font-size: 14px; color: var(--muted); }
+.pool[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section id="start"></section>
+  <section id="task" hidden>
+    <div class="bar"><div class="barrow"><button class="home" data-act="home">Startseite</button><span id="pos"></span><span id="clock"></span></div><div class="track"><div id="trackfill"></div></div></div>
+    <div id="sheet" aria-live="polite"></div>
+  </section>
+  <section id="result" hidden></section>
+  <section id="review" hidden></section>
+</div>
+<script>
+(function () {
+  "use strict";
+  const F = (n, d) => `<span class="frac"><span>${n}</span><span>${d}</span></span>`;
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  /* ---------- SVG helpers ---------- */
+  function barChart(o) {
+    const W = o.w || 680, H = o.h || 300, L = 56, B = o.rotate ? 70 : 40, T = o.title ? 34 : 14, R = 12;
+    const pw = W - L - R, ph = H - T - B, n = o.cats.length, ns = o.series.length;
+    const y = (v) => T + ph - (v / o.max) * ph;
+    let s = `<svg viewBox="0 0 ${W} ${H}" style="max-width:${W}px" role="img" aria-label="${esc(o.label || o.title || "Diagramm")}">`;
+    if (o.title) s += `<text x="${W / 2}" y="20" text-anchor="middle" font-size="15" font-weight="700">${o.title}</text>`;
+    for (let v = 0; v <= o.max + 1e-9; v += o.step) {
+      s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid-strong)" stroke-width="1"/>`;
+      s += `<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end" font-size="12">${String(v).replace(".", ",")}</text>`;
+    }
+    if (o.ylabel) s += `<text transform="translate(14 ${T + ph / 2}) rotate(-90)" text-anchor="middle" font-size="12">${o.ylabel}</text>`;
+    const gw = pw / n, bw = (gw * 0.72) / ns;
+    o.cats.forEach((c, i) => {
+      o.series.forEach((se, k) => {
+        const v = se.vals[i], x = L + i * gw + gw * 0.14 + k * bw;
+        s += `<rect x="${x}" y="${y(v)}" width="${bw - 1}" height="${T + ph - y(v)}" fill="${se.color}"/>`;
+        if (o.values) s += `<text x="${x + bw / 2}" y="${y(v) - 5}" text-anchor="middle" font-size="12" font-weight="700">${v}</text>`;
+      });
+      const cx = L + (i + 0.5) * gw, cy = T + ph + 16;
+      s += o.rotate ? `<text transform="translate(${cx} ${cy}) rotate(-40)" text-anchor="end" font-size="12">${c}</text>`
+        : `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="12">${c}</text>`;
+    });
+    s += `<line x1="${L}" x2="${W - R}" y1="${T + ph}" y2="${T + ph}" stroke="var(--ink)" stroke-width="1.5"/>`;
+    if (o.legend) {
+      let lx = L + 6;
+      o.series.forEach((se) => { s += `<rect x="${lx}" y="${T - 2}" width="12" height="12" fill="${se.color}"/><text x="${lx + 16}" y="${T + 8}" font-size="12">${se.name}</text>`; lx += 30 + se.name.length * 7; });
+    }
+    return s + "</svg>";
+  }
+  function graph(o) {
+    const W = o.w || 420, H = o.h || 320, L = 46, B = 40, T = 26, R = 30;
+    const pw = W - L - R, ph = H - T - B;
+    const X = (v) => L + (v / o.xmax) * pw, Y = (v) => T + ph - (v / o.ymax) * ph;
+    let s = `<svg viewBox="0 0 ${W} ${H}" style="max-width:${W}px" role="img" aria-label="${esc(o.label || "Graph")}">`;
+    for (let v = o.xstep; v <= o.xmax + 1e-9; v += o.xstep) s += `<line x1="${X(v)}" x2="${X(v)}" y1="${T}" y2="${T + ph}" stroke="var(--grid-strong)" stroke-dasharray="3 3"/>`;
+    for (let v = o.ystep; v <= o.ymax + 1e-9; v += o.ystep) s += `<line x1="${L}" x2="${L + pw}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid-strong)" stroke-dasharray="3 3"/>`;
+    s += `<line x1="${L}" y1="${T + ph}" x2="${L + pw + 18}" y2="${T + ph}" stroke="var(--ink)" stroke-width="1.6"/><polygon points="${L + pw + 22},${T + ph} ${L + pw + 12},${T + ph - 5} ${L + pw + 12},${T + ph + 5}" fill="var(--ink)"/>`;
+    s += `<line x1="${L}" y1="${T + ph}" x2="${L}" y2="${T - 14}" stroke="var(--ink)" stroke-width="1.6"/><polygon points="${L},${T - 18} ${L - 5},${T - 8} ${L + 5},${T - 8}" fill="var(--ink)"/>`;
+    for (let v = 0; v <= o.xmax + 1e-9; v += o.xstep) s += `<text x="${X(v)}" y="${T + ph + 18}" text-anchor="middle" font-size="12">${v}</text>`;
+    for (let v = o.ystep; v <= o.ymax + 1e-9; v += o.ystep) s += `<text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="12">${v}</text>`;
+    if (o.xlabel) s += `<text x="${L + pw + 10}" y="${T + ph + 34}" text-anchor="end" font-size="12">${o.xlabel}</text>`;
+    if (o.ylabel) s += `<text x="${L + 8}" y="${T - 10}" font-size="12">${o.ylabel}</text>`;
+    (o.lines || []).forEach((ln) => { s += `<polyline fill="none" stroke="${ln.color || "var(--c1)"}" stroke-width="3" points="${ln.pts.map((p) => X(p[0]) + "," + Y(p[1])).join(" ")}"/>`; });
+    (o.dots || []).forEach((p) => { s += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="5" fill="var(--c3)"/>`; if (p[2]) s += `<text x="${X(p[0]) + 8}" y="${Y(p[1]) + 16}" font-size="12" font-weight="700">${p[2]}</text>`; });
+    return s + "</svg>";
+  }
+  function pie(o) {
+    const cx = 150, cy = 150, r = 120; let a0 = -90, s = `<svg viewBox="0 0 420 300" style="max-width:460px" role="img" aria-label="Kreisdiagramm">`;
+    const tot = o.vals.reduce((a, b) => a + b, 0);
+    o.vals.forEach((v, i) => {
+      const a1 = a0 + (v / tot) * 360, rad = (a) => (a * Math.PI) / 180;
+      const x0 = cx + r * Math.cos(rad(a0)), y0 = cy + r * Math.sin(rad(a0)), x1 = cx + r * Math.cos(rad(a1)), y1 = cy + r * Math.sin(rad(a1));
+      s += `<path d="M${cx},${cy} L${x0},${y0} A${r},${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1},${y1} Z" fill="${o.colors[i]}" stroke="var(--card)" stroke-width="2"/>`;
+      const am = rad((a0 + a1) / 2);
+      s += `<text x="${cx + r * 0.62 * Math.cos(am)}" y="${cy + r * 0.62 * Math.sin(am) + 5}" text-anchor="middle" font-size="14" font-weight="700" style="fill:#fff">${v} %</text>`;
+      a0 = a1;
+    });
+    o.labels.forEach((l, i) => { s += `<rect x="296" y="${50 + i * 34}" width="16" height="16" fill="${o.colors[i]}"/><text x="318" y="${63 + i * 34}" font-size="14">${l}</text>`; });
+    return s + "</svg>";
+  }
+  function circlesPanel(k, seq) {
+    let s = `<svg viewBox="0 0 280 110" role="img" aria-label="Darstellung ${k}"><text x="140" y="20" text-anchor="middle" font-size="16" font-weight="700">${k}</text>`;
+    seq.forEach((c, j) => {
+      const row = j < 10 ? 0 : 1, col = j % 10, x = 22 + col * 26, y = 48 + row * 36;
+      const fill = c === "B" ? "var(--ink)" : c === "G" ? "#9E9E9E" : "var(--card)";
+      s += `<circle cx="${x}" cy="${y}" r="10" fill="${fill}" stroke="${c === "G" ? "#9E9E9E" : "var(--ink)"}" stroke-width="1.6"/>`;
+    });
+    return s + "</svg>";
+  }
+  const seqOf = (parts) => parts.flatMap(([n, c]) => Array(n).fill(c));
+  const circleSets = {
+    A: seqOf([[9, "B"], [1, "G"], [8, "W"], [2, "G"]]), B: seqOf([[7, "B"], [3, "G"], [8, "W"], [2, "G"]]),
+    C: seqOf([[5, "B"], [5, "G"], [10, "W"]]), D: seqOf([[3, "B"], [7, "G"], [8, "W"], [2, "G"]]),
+  };
+  const groupsShort = ["Foto", "Cooking", "Painting", "Sci-Fi", "Sports"];
+  const smallBars = (vals) => barChart({ cats: groupsShort, series: [{ name: "Anzahl", vals, color: "var(--c1)" }], max: 32, step: 8, w: 380, h: 220, ylabel: "Anzahl" });
+  const mini = (lines) => graph({ xmax: 7, ymax: 7, xstep: 1, ystep: 1, xlabel: "kg", ylabel: "Euro", w: 320, h: 250, lines: [{ pts: lines }] });
+  const hyper = []; for (let v = 16 / 7; v <= 7.0001; v += 0.15) hyper.push([v, 16 / v]); hyper.push([7, 16 / 7]);
+
+  const months = ["Jänner", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+  const pvChart = barChart({ cats: months, rotate: true, max: 800, step: 100, w: 720, h: 330, ylabel: "Kilowattstunden (kWh)", legend: true, title: "Stromlieferung in das öffentliche Netz",
+    series: [{ name: "2012", vals: [170, 150, 470, 515, 735, 700, 595, 660, 495, 285, 100, 90], color: "var(--c2)" }, { name: "2013", vals: [155, 160, 445, 485, 650, 680, 665, 600, 410, 245, 110, 75], color: "var(--c1)" }] });
+  const years = ["2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013"];
+  const hsChart = barChart({ cats: years, max: 30, step: 5, w: 720, h: 300, ylabel: "in %", legend: true, title: "Hochschulabschlüsse in Österreich (30- bis 34-Jährige)",
+    series: [{ name: "Insgesamt", vals: [20.6, 20.0, 20.8, 20.9, 22.0, 23.3, 23.3, 23.7, 26.3, 27.3], color: "var(--c1)" },
+      { name: "Frauen", vals: [19.3, 19.9, 20.2, 20.0, 22.2, 23.8, 24.3, 24.3, 26.5, 27.9], color: "var(--c3)" },
+      { name: "Männer", vals: [21.5, 20.2, 21.3, 21.5, 21.6, 22.7, 22.1, 22.9, 25.7, 26.7], color: "var(--c2)" }] });
+
+  const rectTri = `<svg viewBox="0 0 420 220" style="max-width:420px" role="img" aria-label="Rechteck 8 cm mal 4 cm mit gefärbtem Dreieck"><rect x="40" y="40" width="320" height="160" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/><polygon points="40,40 360,40 360,200" fill="#A5D6A7" stroke="var(--ink)" stroke-width="2.5"/><text x="200" y="28" text-anchor="middle" font-size="16">8 cm</text><text x="370" y="125" font-size="16">4 cm</text></svg>`;
+  const lShape = `<svg viewBox="0 0 440 280" style="max-width:440px" role="img" aria-label="Zusammengesetzte Figur"><polygon points="40,130 220,130 220,40 340,40 340,220 40,220" fill="#A5D6A7" stroke="var(--ink)" stroke-width="2.5"/><text x="280" y="28" text-anchor="middle" font-size="16">4 cm</text><text x="212" y="90" text-anchor="end" font-size="16">3 cm</text><text x="350" y="135" font-size="16">6 cm</text><text x="190" y="246" text-anchor="middle" font-size="16">10 cm</text></svg>`;
+  let gridTri = `<svg viewBox="0 0 340 260" style="max-width:380px" role="img" aria-label="Dreieck im Kästchenraster">`;
+  for (let i = 0; i <= 7; i++) gridTri += `<line x1="${20 + i * 40}" x2="${20 + i * 40}" y1="20" y2="220" stroke="var(--grid-strong)"/>`;
+  for (let j = 0; j <= 5; j++) gridTri += `<line x1="20" x2="300" y1="${20 + j * 40}" y2="${20 + j * 40}" stroke="var(--grid-strong)"/>`;
+  gridTri += `<polygon points="60,180 260,180 260,60" fill="none" stroke="var(--ink)" stroke-width="2.5"/><circle cx="60" cy="180" r="4" fill="var(--ink)"/><circle cx="260" cy="180" r="4" fill="var(--ink)"/><circle cx="260" cy="60" r="4" fill="var(--ink)"/><text x="44" y="200" font-size="16">A</text><text x="266" y="200" font-size="16">B</text><text x="266" y="56" font-size="16">C</text></svg>`;
+  const berry = graph({ xmax: 5, ymax: 16, xstep: 1, ystep: 2, xlabel: "kg", ylabel: "Kosten (in €)", w: 420, h: 340, lines: [{ pts: [[0, 2], [5, 16]] }] });
+
+  /* ---------- Aufgaben ---------- */
+  const T25 = [
+    { topic: "Daten & Diagramme", type: "months", need: 2, correct: [1, 6, 10],
+      stem: "<p>Eine Photovoltaikanlage liefert Strom in das öffentliche Stromnetz. Das Diagramm zeigt die Ergebnisse der Jahre 2012 und 2013.</p>", fig: pvChart,
+      q: "Notiere zwei Monate, in denen im Jahr 2013 mehr Strom geliefert wurde als im Vergleichsmonat 2012.", opts: months,
+      hint: "Vergleiche in jedem Monat nur die zwei Balken nebeneinander. Wo ist der dunkle Balken höher?",
+      sol: "<p>Nur im <b>Februar</b>, <b>Juli</b> und <b>November</b> ist der dunkle Balken (2013) höher als der helle (2012). Zwei davon genügen.</p>" },
+    { topic: "Geometrie", type: "mc", correct: 3, stem: "<p>Gegeben sind die drei Seitenlängen a = 4 cm, b = 8 cm und c = 3 cm.</p>",
+      q: "Warum kann man mit dieser Angabe kein Dreieck konstruieren?",
+      opts: ["Weil die Größe der Winkel fehlt.", "Weil die Seite c kürzer ist als die Seite b.", "Weil die Koordinaten der Eckpunkte fehlen.", "Weil b länger ist als a und c zusammen."],
+      hint: "Leg zwei kurze Seiten an die lange Seite. Treffen sie sich noch?",
+      sol: "<p>Zwei Seiten zusammen müssen immer länger sein als die dritte Seite. Hier gilt 4 cm + 3 cm = 7 cm, und 7 cm &lt; 8 cm. Die Seiten a und c „treffen sich“ nicht.</p>" },
+    { topic: "Bruchrechnen", type: "mc", correct: 2, stem: "", q: `Was ist das richtige Ergebnis von ${F(5, 8)} : 2 ?`, grid: true, big: true,
+      opts: [F(10, 8), F(10, 16), F(5, 16), F(5, 4)],
+      hint: "Durch 2 dividieren heißt halbieren. Wird das Ergebnis größer oder kleiner als 5/8?",
+      sol: `<p>Durch 2 dividieren heißt: das Ganze halbieren. Bei einem Bruch verdoppelst du dafür den Nenner.</p><p class="formula">${F(5, 8)} : 2 = ${F(5, "8 · 2")} = ${F(5, 16)}</p><p>Probe: ${F(5, 16)} · 2 = ${F(10, 16)} = ${F(5, 8)} ✓</p>` },
+    { topic: "Daten & Diagramme", type: "rf", answers: [1, 0, 1, 0],
+      stem: "<p>Bei einer Gruppe von Jugendlichen wird die Körpergröße erhoben.</p><p><b>Mädchen:</b> 146 cm; 158 cm; 160 cm; 146 cm; 157 cm<br><b>Buben:</b> 152 cm; 161 cm; 157 cm; 170 cm</p>",
+      q: "Entscheide für jede Aussage, ob sie richtig oder falsch ist.",
+      rows: ["Die Mädchen sind im Durchschnitt 151 cm groß.", "Der maximale Größenunterschied bei den Buben beträgt 18 cm.", "Der maximale Größenunterschied in der Gruppe der Jugendlichen beträgt 22 cm.", "Die Buben sind durchschnittlich 160 cm groß."],
+      why: ["767 : 5 = 153,4 cm", "170 − 152 = 18 cm", "170 − 146 = 24 cm", "640 : 4 = 160 cm"],
+      hint: "Durchschnitt = Summe : Anzahl. Größter Unterschied = größter Wert − kleinster Wert.",
+      sol: "<p><b>Durchschnitt</b> = Summe : Anzahl. <b>Spannweite</b> (maximaler Unterschied) = größter Wert − kleinster Wert. Bei der ganzen Gruppe zählen alle 9 Werte: 170 − 146 = 24 cm.</p>" },
+    { topic: "Terme & Gleichungen", type: "mc", correct: 2,
+      stem: "<p>Paul und Franziska nehmen an einem Laufwettbewerb teil. Paul braucht 12 Minuten länger als Franziska.</p><p>Die Variable <i>f</i> steht für die Zeit, die Franziska für die Laufstrecke benötigt, die Variable <i>p</i> für die Zeit, die Paul benötigt.</p>",
+      q: "Welche Gleichung stellt den Sachverhalt korrekt dar?", opts: ["f = p + 12", "12 = f − p", "p = f + 12", "12 = p + f"],
+      hint: "Setz Zahlen ein: Franziska läuft 20 Minuten. Wie lange braucht Paul?",
+      sol: "<p>Paul ist langsamer, also kommen zu Franziskas Zeit 12 Minuten dazu: <b>p = f + 12</b>.</p><p>Probe: f = 20, dann p = 32. Bei B wäre 12 = 20 − 32 falsch.</p>" },
+    { topic: "Terme & Gleichungen", type: "rf", answers: [0, 1, 1, 0],
+      stem: "<p>In einer Klasse steht die Anzahl der Burschen B und die Anzahl der Mädchen M in folgender Beziehung zueinander:</p><p class='formula'>B − 1 = M</p>",
+      q: "Welche Beschreibung dieser Beziehung ist richtig, welche falsch?",
+      rows: ["Es gibt in der Klasse einen Burschen mehr als Mädchen.", "Es gibt in der Klasse ein Mädchen mehr als Burschen.", "Es gibt in der Klasse einen Burschen weniger als Mädchen.", "Es gibt in der Klasse ein Mädchen weniger als Burschen."],
+      why: ["13 Burschen, 12 Mädchen", "Es ist umgekehrt.", "Es ist umgekehrt.", "Gleiche Aussage wie die erste"],
+      hint: "Probier ein Beispiel: B = 13. Wie groß ist dann M?",
+      sol: "<p>B − 1 = M bedeutet B = M + 1. Beispiel: 13 Burschen, 12 Mädchen. Es gibt also einen Burschen mehr, oder anders gesagt ein Mädchen weniger.</p>" },
+    { topic: "Zahlen & Sachaufgaben", type: "mc", correct: 1, opts: ["3 Erwachsene", "3 Tageskarten für Kinder (bis 12 Jahre)", "3 Stunden Badezeit", "3 geliehene Bademäntel"],
+      stem: "<p>Das Ehepaar Polko geht mit den Kindern in ein Freibad. Am Eingang hängt folgende Preisliste. Herr Polko hat die abgebildete Rechnung erhalten.</p>",
+      fig: `<div class="figrow"><div class="pricelist"><b>Preisliste</b><table><tr><td>Tageskarte Erwachsene</td><td>7 €</td></tr><tr><td>Tageskarte Kinder (bis 12 Jahre)</td><td>5 €</td></tr><tr><td>3-Stunden-Karte Erwachsene</td><td>4 €</td></tr><tr><td>3-Stunden-Karte Kinder</td><td>2 €</td></tr><tr><td>Leihgebühr Bademantel</td><td>3 €</td></tr><tr><td>Leihgebühr Handtuch</td><td>1 €</td></tr></table></div><div class="receipt"><b>RECHNUNG</b><br>4.8.2020 &nbsp; 10:10<br>Kassa 2 &nbsp; Fr. Mayer<br>------------------<br>2 × 7 € &nbsp;&nbsp; 14 €<br><span class="ring">3</span> × 5 € &nbsp;&nbsp; 15 €<br>------------------<br><b>Gesamt &nbsp;&nbsp; 29 €</b></div></div>`,
+      q: "Wofür steht die eingekreiste Zahl 3?",
+      hint: "Such in der Preisliste, was 5 € kostet.",
+      sol: "<p>Auf der Rechnung steht 3 × 5 €. 5 € kostet laut Preisliste eine <b>Tageskarte für ein Kind</b>. Die 2 × 7 € sind 2 Tageskarten für Erwachsene. Familie Polko hat also 3 Kinder unter 12 Jahren dabei.</p>" },
+    { topic: "Geometrie", type: "mc", correct: 2, stem: "<p>Das Dreieck mit den Angaben c = 6 cm, α = 100° und β = 85° kann man nicht konstruieren.</p>",
+      q: "Warum kann man aus diesen Angaben kein Dreieck konstruieren?",
+      opts: ["Weil der Winkel α größer als 90° ist.", "Weil der dritte Winkel γ nicht gegeben ist.", "Weil α und β zusammen größer als 180° sind.", "Weil eine zweite Seitenlänge gegeben sein müsste."],
+      hint: "Wie groß ist die Winkelsumme in jedem Dreieck?",
+      sol: "<p>In jedem Dreieck ergeben die drei Winkel zusammen genau 180°. Hier sind es schon 100° + 85° = 185°. Für γ bleibt nichts übrig.</p><p>A stimmt nicht: Ein stumpfer Winkel ist erlaubt, aber nur einer.</p>" },
+    { topic: "Geometrie", type: "mc", correct: 2,
+      stem: "<p>Die Mittelpunkte M₁ und M₂ zweier Kreise haben den Zentralabstand von 50 mm. Die beiden Durchmesser betragen d₁ = 56 mm und d₂ = 44 mm. Vier Buben glauben, sofort sagen zu können, wie die beiden Kreise zueinander liegen.</p>",
+      q: "Welche Begründung ist korrekt?",
+      opts: ["Die Kreise schneiden sich, weil der Durchmesser vom ersten Kreis größer ist als der Zentralabstand.", "Die Kreise haben keinen gemeinsamen Punkt, weil die Summe der Durchmesser größer ist als der Zentralabstand.", "Die Kreise berühren sich von außen, weil der Zentralabstand genau die Summe der beiden Radien ist.", "Der große Kreis schließt den kleinen ein, weil sein Radius viel größer ist als der des zweiten Kreises."],
+      hint: "Rechne zuerst die Radien aus. Der Radius ist der halbe Durchmesser.",
+      sol: "<p>Für die Lage zählen die Radien: r₁ = 28 mm, r₂ = 22 mm. r₁ + r₂ = 50 mm, genau der Zentralabstand. Die Kreise treffen sich in genau einem Punkt.</p>" },
+    { topic: "Bruchrechnen", type: "num", accept: [3], unit: "", stem: `<p>Emir hat einen Bruch gekürzt:</p><p class="formula" style="font-size:28px">${F(12, 15)} = ${F(4, 5)}</p>`,
+      q: "Mit welcher Zahl hat er gekürzt?", hint: "Durch welche Zahl kommst du von 12 auf 4?",
+      sol: `<p>Kürzen heißt: Zähler und Nenner durch dieselbe Zahl dividieren.</p><p class="formula">${F(12, 15)} = ${F("12 : 3", "15 : 3")} = ${F(4, 5)}</p>` },
+    { topic: "Geometrie", type: "num", accept: [16], unit: "cm²", stem: "<p>In einem Rechteck wurde ein rechtwinkeliges Dreieck eingefärbt.</p>", fig: rectTri,
+      q: "Wie viel cm² beträgt der Flächeninhalt des gefärbten Dreiecks?", hint: "Das Dreieck ist genau die Hälfte des Rechtecks.",
+      sol: "<p>Die Diagonale teilt das Rechteck in zwei gleich große Dreiecke. Rechteck: 8 · 4 = 32 cm², Dreieck: 32 : 2 = <b>16 cm²</b>.</p>" },
+    { topic: "Anteile & Proportionen", type: "mc", correct: 1, grid: true,
+      stem: "<p>Amina bezahlt für 4 kg Kartoffeln 4 Euro. Sie weiß, dass Menge und Preis zueinander direkt proportional sind. Zur Erklärung zeichnet sie diesen Zusammenhang für ihre Freundin auf.</p>",
+      q: "Welche der Grafiken zeigt diesen direkt proportionalen Zusammenhang?", figopts: true,
+      opts: [mini(hyper), mini([[0, 0], [7, 7]]), mini([[0, 2], [7, 5.5]]), mini([[0, 0], [3.5, 7]])],
+      hint: "Direkt proportional: 0 kg kosten 0 €, und die Linie geht durch den Punkt (4 | 4).",
+      sol: "<p>Richtig ist eine <b>Gerade durch den Nullpunkt</b> und durch (4 | 4): doppelte Menge, doppelter Preis.</p><p>A ist eine Kurve (je mehr kg, desto billiger), C beginnt nicht bei 0, D geht durch (2 | 4), also kosten 4 kg dort 8 €.</p>" },
+    { topic: "Anteile & Proportionen", type: "rf", answers: [1, 0, 1, 1], stem: "<p>In einem Orchester spielen 36 Männer und 18 Frauen.</p>",
+      q: "Welche Aussage ist richtig, welche falsch?",
+      rows: ["Die Hälfte der Personen im Orchester sind Frauen.", "Das Orchester besteht zu zwei Drittel aus Männern.", "In diesem Orchester sind 18 % Frauen.", "Das Verhältnis Männer zu Frauen beträgt 3 : 1."],
+      why: ["Die Hälfte von 54 wäre 27.", "36 von 54 = 2/3", "18 von 54 = 1/3 ≈ 33 %", "36 : 18 = 2 : 1"],
+      hint: "Rechne zuerst aus, wie viele Personen insgesamt im Orchester spielen.",
+      sol: "<p>Insgesamt sind es 36 + 18 = 54 Personen. Achtung: 18 Frauen sind nicht 18 %. Prozent bezieht sich immer auf das Ganze.</p>" },
+    { topic: "Daten & Diagramme", type: "mc", correct: 1, grid: true, figopts: true,
+      stem: "<p>Während einer Projektwoche teilen sich alle 50 Schülerinnen und Schüler der 3. Klassen in fünf Projektgruppen auf. Die Aufteilung ist im Kreisdiagramm dargestellt:</p>",
+      fig: pie({ vals: [16, 24, 20, 32, 8], labels: ["Hand Painting", "Science Fiction", "Global Cooking", "Crazy Sports", "Foto & Doku"], colors: ["#4F7CAC", "#2E7D4F", "#C9A227", "#1E3A5F", "#8E5B9C"] }),
+      q: "In welcher Darstellung ist die Aufteilung ebenfalls richtig abgebildet?",
+      opts: [smallBars([4, 8, 10, 12, 16]), smallBars([4, 10, 8, 12, 16]), smallBars([8, 20, 16, 24, 32]), smallBars([4, 10, 8, 16, 12])],
+      hint: "Rechne die Prozent in Personen um: 10 % von 50 sind 5.",
+      sol: "<p>8 % = 4, 16 % = 8, 20 % = 10, 24 % = 12, 32 % = 16 Personen. Also Foto 4, Cooking 10, Painting 8, Sci-Fi 12, Sports 16. Das ist <b>B</b>.</p><p>Bei A sind Cooking und Painting vertauscht, C zeigt Prozent statt Anzahl, bei D sind Sci-Fi und Sports vertauscht.</p>" },
+    { topic: "Zahlen & Sachaufgaben", type: "num", accept: [3050000], thousands: true, unit: "", stem: "<p>Große Zahlen werden oft „abgekürzt“ angegeben.</p>",
+      q: "Schreib 3,05 Millionen ausschließlich mit Ziffern an.", hint: "0,05 Millionen sind 5 Hundertstel von einer Million.",
+      sol: "<p>3,05 Millionen = <b>3 050 000</b>. Die Ziffer vor dem Komma steht bei den Millionen, danach kommen Hunderttausender (0) und Zehntausender (5). Kontrolle: 3 000 000 + 50 000.</p>" },
+    { topic: "Daten & Diagramme", type: "rf", answers: [0, 0, 1, 1], fig: hsChart,
+      stem: "", q: "Entscheide für jede Zeile, ob die Aussage mit dem Diagramm übereinstimmt oder nicht.",
+      rows: ["2005 war der Unterschied zwischen Männern und Frauen bei Hochschulabschlüssen am geringsten.", "Seit 2008 ist der Prozentsatz der Frauen mit Hochschulabschluss höher als jener der Männer.", "2010 ging der Prozentsatz der Frauen mit Hochschulabschluss im Vergleich zu 2009 zurück.", "Der Prozentsatz der Personen mit Hochschulabschluss ist von 2004 bis 2013 jedes Jahr angestiegen."],
+      why: ["Grün und grau fast gleich hoch", "Ab 2008 ist Grün immer höher.", "2010 ist Grün höher als 2009.", "2005 geht der Wert zurück."],
+      hint: "Erst die Legende lesen: Welche Farbe gehört zu Frauen, welche zu Männern, welche zu insgesamt?",
+      sol: "<p>Lies zuerst die Legende. Dann vergleichst du immer nur die Säulen, um die es in der Aussage geht.</p>" },
+    { topic: "Anteile & Proportionen", type: "mc", correct: 1, opts: ["Weil 3 kg mehr wiegen als 1 kg.", "Weil 3 kg dann 3 · 2,50 € = 7,50 € kosten müssten, aber nur 6,60 € kosten.", "Weil Äpfel bei größeren Mengen immer teurer werden.", "Weil 6,60 € mehr ist als 2,50 €."], stem: "<p>Florian sieht im Obstgeschäft folgendes Angebot.</p>", fig: `<div class="offer">1 kg Äpfel … 2,50 €<br>3 kg Äpfel … 6,60 €</div>`,
+      q: "Warum ist der Zusammenhang zwischen Menge und Preis nicht direkt proportional?",
+      hint: "Was müssten 3 kg kosten, wenn der Preis pro kg gleich bliebe?",
+      sol: "<p>Direkt proportional heißt: dreifache Menge, dreifacher Preis. 3 · 2,50 € = 7,50 €, im Angebot aber 6,60 €. Oder: 6,60 € : 3 = 2,20 € pro kg statt 2,50 €.</p><p>Eine Begründung braucht eine Rechnung oder einen Preisvergleich.</p>" },
+    { topic: "Terme & Gleichungen", type: "rf", answers: [0, 1, 0, 1], cols: ["Ja", "Nein"],
+      stem: "<p>Martin versucht eine Aufgabe zu lösen und macht folgenden Rechenansatz:</p><p class='formula'>a : b</p>",
+      q: "Entscheide für jede Aussage, ob sie zu diesem Ansatz passt oder nicht.",
+      rows: ["Es werden a Äpfel auf b Kinder aufgeteilt.", "Ein Ticketpreis von a Euro wird um b Euro verringert.", "Die Schülerzahlen zweier Klassen verhalten sich wie a zu b.", "Auf Grund einer Umleitung wurde die Fahrzeit von a Minuten um das b-fache verlängert."],
+      why: ["aufteilen = dividieren", "verringern um b: a − b", "Verhältnis a zu b: a : b", "b-fache: a · b"],
+      hint: "Übersetze jede Aussage in eine Rechnung: aufteilen, verringern, verhalten, b-fach.",
+      sol: "<p>a : b heißt: a wird durch b dividiert. Das passt zu „aufteilen“ und zu einem Verhältnis. „Verringern um“ ist Minus, „das b-fache“ ist Mal.</p>" },
+    { topic: "Anteile & Proportionen", type: "mc", correct: 1, opts: ["Weil in beiden Klassen 9 Kinder helfen.", "Weil sich in Klasse B ein größerer Anteil der Klasse gemeldet hat.", "Weil 16 mehr ist als 9.", "Weil Klasse A mehr Kinder hat."],
+      stem: "<p>In den Klassen A und B haben sich freiwillige Helfer/innen für eine Schulveranstaltung gemeldet.</p>",
+      fig: `<table class="plain"><tr><th></th><th>freiwillige Helfer/innen</th><th>nicht gemeldet</th></tr><tr><th>Klasse A</th><td>9</td><td>16</td></tr><tr><th>Klasse B</th><td>9</td><td>9</td></tr></table><p>Die Klasse mit den meisten Helferinnen und Helfern bekommt einen freien Tag. Die Mathematiklehrerin erklärt, dass die Klasse B den freien Tag erhält.</p>`,
+      q: "Welches Argument begründet diese Entscheidung?",
+      hint: "Gleich viele Helfer, aber sind die Klassen gleich groß?",
+      sol: "<p>Klasse A: 9 + 16 = 25 Kinder, 9 von 25 = 36 %. Klasse B: 9 + 9 = 18 Kinder, 9 von 18 = 50 %. Entscheidend ist der <b>Anteil</b>.</p>" },
+    { topic: "Daten & Diagramme", type: "rf", answers: [0, 1, 1, 1],
+      stem: "<p>Im Himbeerland können Himbeeren selbst geerntet werden. Die Kosten setzen sich aus den Kosten für den Sammelkorb und den Kosten für die Himbeeren (in kg) zusammen. Die Kosten bis 5 kg Himbeeren können aus dem Diagramm abgelesen werden.</p>", fig: berry,
+      q: "Mia liest verschiedene Aussagen aus dem Diagramm ab. Welche ist richtig, welche falsch?",
+      rows: ["Der Korb kostet allein 2 €.", "Für 3 kg Himbeeren und den Korb sind 13 € zu bezahlen.", "5 kg Himbeeren mit Korb kosten mehr als 16 €.", "2 kg Himbeeren mit Korb kosten doppelt so viel wie 1 kg Himbeeren mit Korb."],
+      why: ["Bei 0 kg zeigt der Graph 2 €.", "ca. 10,40 €", "genau 16 €, nicht mehr", "4,80 € und 7,60 €: der Korb zählt nur einmal"],
+      hint: "Was kostet es bei 0 kg? Das ist der Korb.",
+      sol: "<p>Bei 0 kg zeigt der Graph 2 €, das ist der Korb. Weil der Korb nur einmal bezahlt wird, kosten 2 kg nicht doppelt so viel wie 1 kg.</p>" },
+    { topic: "Geometrie", type: "num", accept: [32], unit: "cm", stem: "", fig: lShape, q: "Berechne den Umfang der Figur.",
+      hint: "Zwei Seiten fehlen. Oder: Schieb die Stufe nach außen, dann wird es ein Rechteck.",
+      sol: "<p>Fehlende Seiten: 10 − 4 = 6 cm und 6 − 3 = 3 cm. Umfang: 10 + 6 + 4 + 3 + 6 + 3 = <b>32 cm</b>. Trick: gleicher Umfang wie ein Rechteck 10 cm × 6 cm.</p>" },
+    { topic: "Geometrie", type: "num", accept: [7.5], unit: "cm²", stem: "<p>Nachfolgend ist ein Dreieck dargestellt. Jedes Kästchen hat eine Seitenlänge von 1 cm.</p>", fig: gridTri,
+      q: "Ermittle den Flächeninhalt des dargestellten Dreiecks.", hint: "Bei B ist ein rechter Winkel. Zähl die Kästchen von A nach B und von B nach C.",
+      sol: "<p>AB = 5 cm, BC = 3 cm, rechter Winkel bei B. A = 5 · 3 : 2 = <b>7,5 cm²</b>. Das Dreieck ist die Hälfte eines Rechtecks 5 cm × 3 cm.</p>" },
+    { topic: "Geometrie", type: "num", accept: [1], unit: "m",
+      stem: "<p>Ein Schwimmbecken ist 5 m breit und 15 m lang und hat eine Tiefe von 2 m. Ein zweites Schwimmbecken hat das gleiche Fassungsvolumen und ist 10 m breit und 15 m lang.</p>",
+      q: "Wie tief ist das zweite Schwimmbecken?", hint: "Das zweite Becken ist doppelt so breit.",
+      sol: "<p>Volumen 1: 5 · 15 · 2 = 150 m³. Grundfläche 2: 10 · 15 = 150 m². Tiefe: 150 : 150 = <b>1 m</b>. Doppelt so breit heißt halb so tief.</p>" },
+    { topic: "Anteile & Proportionen", type: "mc", correct: 1, grid: true, figopts: true,
+      stem: "<p>Die vier Darstellungen zeigen jeweils 20 Kreise.</p><p><b>Bedingung 1:</b> Die relative Häufigkeit der weißen Kreise beträgt 40 %.<br><b>Bedingung 2:</b> Die meisten Kreise sind weiß.</p>",
+      q: "Welche dieser Darstellungen erfüllt beide Bedingungen?", opts: ["A", "B", "C", "D"].map((k) => circlesPanel(k, circleSets[k])),
+      hint: "40 % von 20 sind 8. Zähl dann die schwarzen und grauen Kreise.",
+      sol: "<p>40 % von 20 = 8 weiße Kreise. A hat 9 schwarze, C hat 10 weiße (50 %), D hat 9 graue. Nur bei <b>B</b> gibt es von keiner anderen Farbe mehr als 8.</p>" },
+    { topic: "Geometrie", type: "mc", correct: 1, opts: ["Weil ein Trapez immer vier gleich lange Seiten hat.", "Weil ein Trapez nur ein Paar paralleler Seiten braucht und keine rechten Winkel haben muss.", "Weil ein Rechteck keine parallelen Seiten hat.", "Weil ein Trapez nur drei Ecken hat."], stem: "<p>Mirac behauptet: „Jedes Trapez ist ein Rechteck.“</p>", q: "Warum ist die Behauptung falsch?",
+      fig: "", hint: "Zeichne ein Trapez mit schrägen Seiten. Ist das ein Rechteck?",
+      sol: "<p>Ein Trapez braucht nur ein Paar paralleler Seiten, ein Rechteck vier rechte Winkel. Ein einziges Gegenbeispiel reicht. Umgekehrt stimmt es: Jedes Rechteck ist ein Trapez.</p>" },
+    { topic: "Bruchrechnen", type: "mc", correct: 1, stem: "", q: `Warum ist ${F(3, 4)} : ${F(5, 7)} größer als 0,75?`,
+      opts: ["Weil 3 kleiner als 5 und 4 kleiner als 7 ist.", `Weil ${F(5, 7)} kleiner als 1 ist.`, "Weil 5 und 7 teilerfremd sind.", `Weil ${F(3, 4)} kleiner als 1 ist.`],
+      hint: "Was passiert, wenn du 6 durch 0,5 dividierst?",
+      sol: `<p>Wer durch eine Zahl kleiner als 1 dividiert, bekommt ein größeres Ergebnis.</p><p class="formula">${F(3, 4)} : ${F(5, 7)} = ${F(3, 4)} · ${F(7, 5)} = ${F(21, 20)} = 1,05 &gt; 0,75</p><p>„Teilerfremd“ sagt nichts über die Größe: 3/4 : 6/5 = 0,625, obwohl 5 und 6 auch teilerfremd sind.</p>` },
+  ];
+  T25.forEach((t, i) => (t.id = i + 1));
+  /* ---------- Lernpool 2023 ---------- */
+  const tally = (n) => {
+    const g = Math.ceil(n / 5); let s = `<svg viewBox="0 0 ${g * 34 + 4} 30" style="height:26px;width:${g * 34 + 4}px;max-width:none" role="img" aria-label="${n} Striche">`;
+    for (let k = 0; k < g; k++) { const m = Math.min(5, n - k * 5), x = 6 + k * 34; for (let i = 0; i < Math.min(m, 4); i++) s += `<line x1="${x + i * 6}" y1="3" x2="${x + i * 6}" y2="27" stroke="var(--ink)" stroke-width="2"/>`; if (m === 5) s += `<line x1="${x - 4}" y1="22" x2="${x + 22}" y2="8" stroke="var(--ink)" stroke-width="2"/>`; }
+    return s + "</svg>";
+  };
+  const shoeTable = `<table class="plain"><tr><th>Schuhgröße</th>${[36, 37, 38, 39, 40, 41].map((n) => `<th>${n}</th>`).join("")}</tr><tr><th>Strichliste</th><td>${tally(10)}</td><td>${tally(5)}</td><td></td><td>${tally(3)}</td><td>${tally(2)}</td><td>${tally(1)}</td></tr></table>`;
+  const boardTable = `<table class="plain" style="font-size:20px"><tr><th></th><th>3A</th><th>3B</th></tr><tr><th>Winter</th><td>10</td><td>17</td></tr><tr><th>Sommer</th><td>?</td><td>7</td></tr></table>`;
+  const visitors = [2000, 2400, 3200, 3400, 3400, 4100, 2200, 2500, 1500, 2000, 3800, 3800];
+  const visitChart = (() => {
+    const W = 660, H = 340, L = 66, R = 14, Tp = 14, B = 90, pw = W - L - R, ph = H - Tp - B, X = (i) => L + ((i + 0.5) * pw) / 12, Y = (v) => Tp + ph - (v / 4500) * ph;
+    let s = `<svg viewBox="0 0 ${W} ${H}" style="max-width:${W}px" role="img" aria-label="Liniendiagramm: Besucher eines Science Centers pro Monat">`;
+    for (let v = 0; v <= 4500; v += 500) s += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid-strong)"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="12">${v}</text>`;
+    s += `<polyline fill="none" stroke="var(--c1)" stroke-width="2.5" points="${visitors.map((v, i) => X(i) + "," + Y(v)).join(" ")}"/>`;
+    visitors.forEach((v, i) => { s += `<circle cx="${X(i)}" cy="${Y(v)}" r="3.5" fill="var(--c1)"/><text transform="translate(${X(i) + 4} ${Tp + ph + 14}) rotate(-90)" text-anchor="end" font-size="12">${months[i]}</text>`; });
+    s += `<line x1="${L}" x2="${W - R}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--ink)" stroke-width="1.5"/><text transform="translate(16 ${Tp + ph / 2}) rotate(-90)" text-anchor="middle" font-size="12">Anzahl der Besucher/innen</text><text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle" font-size="13">Monat</text>`;
+    return s + "</svg>";
+  })();
+  const symFig = `<svg viewBox="0 0 440 340" style="max-width:440px" role="img" aria-label="Strecke AB mit Streckensymmetrale s und den Punkten P und Q">
+    <line x1="70" y1="70" x2="330" y2="270" stroke="var(--ink)" stroke-width="2"/>
+    <line x1="60" y1="335" x2="345" y2="-5" stroke="var(--muted)" stroke-width="2" stroke-dasharray="9 6"/>
+    <path d="M186,184 L198,198 L212,186" fill="none" stroke="var(--ink)" stroke-width="1.5" transform="translate(0 -6)"/>
+    <circle cx="70" cy="70" r="3.5" fill="var(--ink)"/><circle cx="330" cy="270" r="3.5" fill="var(--ink)"/><circle cx="200" cy="170" r="3.5" fill="var(--ink)"/>
+    <circle cx="246" cy="116" r="3.5" fill="var(--ink)"/><circle cx="330" cy="100" r="3.5" fill="none" stroke="var(--ink)" stroke-width="1.8"/>
+    <text x="52" y="66" font-size="16" font-weight="700">A</text><text x="338" y="290" font-size="16" font-weight="700">B</text><text x="178" y="164" font-size="16" font-weight="700">M</text>
+    <text x="252" y="110" font-size="16" font-weight="700">P</text><text x="340" y="96" font-size="16" font-weight="700">Q</text><text x="86" y="300" font-size="16" font-style="italic">s</text></svg>`;
+  const windowFig = (() => {
+    const cx = 260, cy = 240, r = 210; let s = `<svg viewBox="0 0 520 260" style="max-width:520px" role="img" aria-label="Halbkreisförmiges Fenster mit vier Verstrebungen">
+      <path d="M${cx - r},${cy} A${r},${r} 0 0 1 ${cx + r},${cy} Z" fill="var(--card)" stroke="var(--ink)" stroke-width="2.5"/>`;
+    for (let k = 1; k <= 4; k++) { const a = (Math.PI * 36 * k) / 180; s += `<line x1="${cx}" y1="${cy}" x2="${cx + r * Math.cos(a)}" y2="${cy - r * Math.sin(a)}" stroke="var(--ink)" stroke-width="1.4"/>`; }
+    return s + "</svg>";
+  })();
+  const subjectFig = (() => {
+    const strip = [[0, 30, "A", "#C9CC3F", "#16202B"], [30, 90, "B", "#9B2D55", "#fff"], [90, 100, "C", "#5E9B5E", "#fff"]];
+    let s = `<svg viewBox="0 0 520 100" style="max-width:520px" role="img" aria-label="Prozentstreifen mit den Abschnitten A, B und C">`;
+    strip.forEach(([a, b, n, c, t]) => { s += `<rect x="${10 + a * 4.8}" y="10" width="${(b - a) * 4.8}" height="40" fill="${c}" stroke="var(--card)" stroke-width="2"/><text x="${10 + ((a + b) / 2) * 4.8}" y="36" text-anchor="middle" font-size="18" font-weight="700" style="fill:${t}">${n}</text>`; });
+    for (let p = 0; p <= 100; p += 10) s += `<line x1="${10 + p * 4.8}" x2="${10 + p * 4.8}" y1="50" y2="58" stroke="var(--ink)"/><text x="${10 + p * 4.8}" y="76" text-anchor="middle" font-size="12">${p} %</text>`;
+    s += "</svg>";
+    return `<div class="figrow">${pie({ vals: [60, 30, 10], colors: ["#5B8FD0", "#E8A63A", "#5B3A8C"], labels: ["Mathematik", "Deutsch", "Englisch"] })}</div><div style="margin-top:10px">${s}</div>`;
+  })();
+  const cubeFig = (() => {
+    const sz = 44, d = 18, X0 = 14, yb = 170, H = [[2, 3, 1], [1, 0, 0]];
+    let s = `<svg viewBox="0 0 380 200" style="max-width:380px" role="img" aria-label="Körper aus Würfeln im Schrägriss und Plan dazu">`;
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) for (let h = 0; h < H[r][c]; h++) {
+      const x = X0 + c * sz + (1 - r) * d, y = yb - (h + 1) * sz - (1 - r) * d;
+      s += `<polygon points="${x},${y} ${x + d},${y - d} ${x + sz + d},${y - d} ${x + sz},${y}" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/>
+        <polygon points="${x + sz},${y} ${x + sz + d},${y - d} ${x + sz + d},${y + sz - d} ${x + sz},${y + sz}" fill="#C4CAD2" stroke="var(--ink)" stroke-width="1.6"/>
+        <rect x="${x}" y="${y}" width="${sz}" height="${sz}" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/>`;
+    }
+    [["2", 0, 0], ["x", 1, 0], ["1", 2, 0], ["1", 0, 1]].forEach(([t, c, r]) => { s += `<rect x="${220 + c * 40}" y="${60 + r * 40}" width="40" height="40" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><text x="${240 + c * 40}" y="${87 + r * 40}" text-anchor="middle" font-size="20" font-weight="${t === "x" ? 700 : 400}">${t}</text>`; });
+    return s + `</svg>`;
+  })();
+  const wayFig = (() => {
+    const W = 460, H = 310, L = 60, R = 20, Tp = 20, B = 50, pw = W - L - R, ph = H - Tp - B, X = (m) => L + (m / 30) * pw, Y = (v) => Tp + ph - (v / 2) * ph;
+    let s = `<svg viewBox="0 0 ${W} ${H}" style="max-width:${W}px" role="img" aria-label="Weg-Zeit-Diagramm von Ali und Jana">`;
+    for (let m = 0; m <= 30; m += 5) s += `<line x1="${X(m)}" x2="${X(m)}" y1="${Tp}" y2="${Tp + ph}" stroke="var(--grid-strong)" stroke-dasharray="3 4"/>`;
+    for (let v = 0; v <= 2.0001; v += 0.5) s += `<line x1="${L}" x2="${L + pw}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid-strong)" stroke-dasharray="3 4"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="12">${String(v.toFixed(1)).replace(".", ",")}</text>`;
+    [[0, "07:30"], [10, "07:40"], [20, "07:50"], [30, "08:00"]].forEach(([m, t]) => { s += `<line x1="${X(m)}" x2="${X(m)}" y1="${Tp + ph}" y2="${Tp + ph + 6}" stroke="var(--ink)" stroke-width="1.5"/><text x="${X(m)}" y="${Tp + ph + 22}" text-anchor="middle" font-size="12">${t}</text>`; });
+    s += `<line x1="${L}" y1="${Tp + ph}" x2="${L + pw}" y2="${Tp + ph}" stroke="var(--ink)" stroke-width="1.6"/><line x1="${L}" y1="${Tp + ph}" x2="${L}" y2="${Tp - 6}" stroke="var(--ink)" stroke-width="1.6"/>
+      <polyline fill="none" stroke="var(--ink)" stroke-width="2.4" points="${X(0)},${Y(0)} ${X(30)},${Y(2)}"/><polyline fill="none" stroke="var(--ink)" stroke-width="2.4" points="${X(20)},${Y(0)} ${X(30)},${Y(2)}"/>
+      <text x="${X(14)}" y="${Y(1.3)}" font-size="14" font-weight="700">Ali</text><text x="${X(25.5)}" y="${Y(0.8)}" font-size="14" font-weight="700">Jana</text>
+      <text x="${L - 40}" y="${Tp + ph / 2}" font-size="12" transform="rotate(-90 ${L - 40} ${Tp + ph / 2})" text-anchor="middle">km</text><text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle" font-size="12">Zeit</text>`;
+    return s + "</svg>";
+  })();
+  const isoFig = `<svg viewBox="0 0 280 270" style="max-width:300px" role="img" aria-label="Gleichschenkeliges Dreieck ABC, AB = 4 cm, BC = 5,39 cm">
+    <polygon points="40,240 200,240 120,40" fill="#F3E5DC" stroke="var(--ink)" stroke-width="2.4"/>
+    <text x="22" y="258" font-size="16" font-weight="700">A</text><text x="204" y="258" font-size="16" font-weight="700">B</text><text x="112" y="30" font-size="16" font-weight="700">C</text>
+    <text x="120" y="262" font-size="14" text-anchor="middle">4 cm</text><text x="176" y="130" font-size="14" transform="rotate(68 176 130)">5,39 cm</text></svg>`;
+
+  const rectDiag = `<svg viewBox="0 0 440 220" style="max-width:440px" role="img" aria-label="Rechteck mit Diagonale, unteres Dreieck gefärbt"><polygon points="30,30 410,30 410,170 30,170" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><polygon points="30,170 410,170 410,30" fill="#CFDAEC" stroke="var(--ink)" stroke-width="2"/><line x1="30" y1="170" x2="410" y2="30" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="6 4"/><path d="M392,170 A18,18 0 0 1 410,152" fill="none" stroke="var(--ink)" stroke-width="1.5"/><circle cx="402" cy="161" r="1.8" fill="var(--ink)"/><text x="215" y="196" text-anchor="middle" font-size="16">x</text><text x="424" y="104" font-size="16">y</text></svg>`;
+  const dataFig = (() => {
+    const pieVals = [35, 35, 18, 9, 3], pc = ["#9B9B9B", "#C9C9C9", "#E3E3E3", "#EFEFEF", "#FAFAFA"], pl = ["Nicht besorgt 35 %", "Eher besorgt 35 %", "Sehr besorgt 18 %", "Eher nicht besorgt 9 %", "Keine Angabe 3 %"];
+    let a0 = -90, p = `<svg viewBox="0 0 360 290" style="max-width:380px" role="img" aria-label="Kreisdiagramm: Sorge um persönliche Daten"><text x="180" y="18" text-anchor="middle" font-size="14" font-weight="700">Sorge um persönliche Daten</text>`;
+    pieVals.forEach((v, i) => { const a1 = a0 + v * 3.6, r = (a) => (a * Math.PI) / 180, cx = 110, cy = 150, R = 95; p += `<path d="M${cx},${cy} L${cx + R * Math.cos(r(a0))},${cy + R * Math.sin(r(a0))} A${R},${R} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${cx + R * Math.cos(r(a1))},${cy + R * Math.sin(r(a1))} Z" fill="${pc[i]}" stroke="var(--ink)" stroke-width="1"/>`; a0 = a1; });
+    pl.forEach((t, i) => { p += `<rect x="215" y="${80 + i * 30}" width="14" height="14" fill="${pc[i]}" stroke="var(--ink)" stroke-width="1"/><text x="236" y="${92 + i * 30}" font-size="13">${t}</text>`; });
+    p += "</svg>";
+    const names = ["Kontodaten", "Kreditkarten", "Finanzdaten (Steuerdaten)", "Krankenakten", "Private Kontakte", "Nichts"], vals = [94, 84, 68, 57, 47, 4];
+    let b = `<svg viewBox="0 0 520 260" style="max-width:520px" role="img" aria-label="Balkendiagramm: Besonders schützenswert, Angaben in Prozent"><text x="300" y="18" text-anchor="middle" font-size="14" font-weight="700">Besonders schützenswert</text>`;
+    names.forEach((n, i) => { const y = 34 + i * 34; b += `<text x="186" y="${y + 17}" text-anchor="end" font-size="13">${n}</text><rect x="192" y="${y}" width="${vals[i] * 3.1}" height="24" fill="#C9C9C9"/><text x="${192 + vals[i] * 3.1 - 6}" y="${y + 17}" text-anchor="end" font-size="13">${vals[i]}</text>`; });
+    b += `<line x1="192" y1="30" x2="192" y2="240" stroke="var(--ink)" stroke-width="1.5"/><text x="500" y="252" text-anchor="end" font-size="12">Angaben in %</text></svg>`;
+    return `<div class="figrow">${p}${b}</div>`;
+  })();
+  const laraFig = (() => {
+    const W = 460, H = 320, L = 66, R = 20, Tp = 34, B = 50, pw = W - L - R, ph = H - Tp - B, X = (m) => L + (m / 25) * pw, Y = (v) => Tp + ph - (v / 1000) * ph;
+    let s = `<svg viewBox="0 0 ${W} ${H}" style="max-width:${W}px" role="img" aria-label="Laras Schulweg: Weg in Metern über der Uhrzeit"><text x="${L + pw / 2}" y="18" text-anchor="middle" font-size="14" font-weight="700">Laras Schulweg</text>`;
+    for (let v = 0; v <= 1000; v += 100) s += `<line x1="${L}" x2="${L + pw}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--grid-strong)"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="12">${v}</text>`;
+    [[0, "07:10"], [5, "07:15"], [10, "07:20"], [15, "07:25"], [20, "07:30"], [25, "07:35"]].forEach(([m, t]) => { s += `<line x1="${X(m)}" x2="${X(m)}" y1="${Tp}" y2="${Tp + ph}" stroke="var(--grid-strong)"/><text x="${X(m)}" y="${Tp + ph + 18}" text-anchor="middle" font-size="12">${t}</text>`; });
+    s += `<line x1="${L}" y1="${Tp + ph}" x2="${L + pw}" y2="${Tp + ph}" stroke="var(--ink)" stroke-width="1.6"/><line x1="${L}" y1="${Tp + ph}" x2="${L}" y2="${Tp - 4}" stroke="var(--ink)" stroke-width="1.6"/><polyline fill="none" stroke="var(--c1)" stroke-width="2.6" points="${X(0)},${Y(0)} ${X(20)},${Y(800)}"/>
+      <text transform="translate(14 ${Tp + ph / 2}) rotate(-90)" text-anchor="middle" font-size="12">Weg in m</text><text x="${L + pw / 2}" y="${H - 6}" text-anchor="middle" font-size="12">Uhrzeit</text></svg>`;
+    return s;
+  })();
+  const plotFig = `<svg viewBox="0 0 360 300" style="max-width:360px" role="img" aria-label="Plan eines Grundstücks mit den Seiten a bis f"><polygon points="50,30 290,30 290,270 190,270 190,170 50,170" fill="#EEF0F2" stroke="var(--ink)" stroke-width="2"/>
+    <text x="170" y="20" text-anchor="middle" font-size="15">b</text><text x="30" y="104" font-size="15">a</text><text x="302" y="154" font-size="15">c</text><text x="118" y="192" text-anchor="middle" font-size="15">f</text><text x="176" y="224" text-anchor="end" font-size="15">e</text><text x="240" y="290" text-anchor="middle" font-size="15">d</text></svg>`;
+
+  const T23 = [
+    { topic: "Bruchrechnen", type: "mc", correct: 3, stem: "<p>Vier Dezimalzahlen sollen als Bruch dargestellt werden.</p>", q: "Welche Darstellung ist richtig?", grid: true,
+      opts: [`0,300 = ${F(3, 100)}`, `3,07 = 3 ${F(0, 7)}`, `1,2 = ${F(1, 2)}`, `0,6 = ${F(6, 10)}`],
+      hint: "Die Stellen nach dem Komma sagen dir den Nenner: Zehntel, Hundertstel, Tausendstel.",
+      sol: `<p>0,6 sind 6 Zehntel, also ${F(6, 10)} ✓.</p><p>0,300 = ${F(300, 1000)} = ${F(3, 10)}, nicht ${F(3, 100)}.<br>3,07 = 3 + ${F(7, 100)}, nicht 3 ${F(0, 7)}.<br>1,2 = 1 ${F(2, 10)} = ${F(6, 5)}, nicht ${F(1, 2)}.</p>` },
+    { topic: "Terme & Gleichungen", type: "mc", correct: 1, stem: `<p class="formula">a + 3 = b</p>`, q: "Was bedeutet die Gleichung?",
+      opts: ["b ist 3 mal so groß wie a.", "b ist um 3 größer als a.", "a ist 3 mal so groß wie b.", "a ist um 3 größer als b."],
+      hint: "Setz Zahlen ein: a = 5. Was kommt für b heraus?",
+      sol: "<p>Probe mit a = 5: 5 + 3 = 8, also b = 8. b ist um 3 <b>größer</b> als a. „Mal so groß“ wäre eine Multiplikation.</p>" },
+    { topic: "Zahlen & Sachaufgaben", type: "num", accept: [60], unit: "Fliesen",
+      stem: "<p>Für die Verfliesung eines Bades sind 30 rechteckige Bodenfliesen (30 cm × 60 cm) notwendig. Leider sind nur quadratische Bodenfliesen (30 cm × 30 cm) erhältlich.</p>", q: "Wie viele quadratische Bodenfliesen werden benötigt?",
+      hint: "Wie viele quadratische Fliesen passen auf eine rechteckige?",
+      sol: "<p>Eine rechteckige Fliese (30 × 60 cm) besteht aus <b>2</b> quadratischen (30 × 30 cm).</p><p>30 · 2 = <b>60 Fliesen</b></p><p>Probe mit Flächen: 30 · 1800 cm² = 54 000 cm², und 54 000 : 900 = 60 ✓</p>" },
+    { topic: "Geometrie", type: "mc", correct: 2, stem: "<p>Ein Dreieck soll konstruiert werden. Gegeben sind:</p><p>c = 4 cm<br>α = 110°<br>β = 135°</p><p>Peter meint: „Mit dieser Angabe kann man kein Dreieck zeichnen.“</p>", q: "Warum hat Peter recht?",
+      opts: ["Weil man mit einer Seite und zwei Winkeln nie ein Dreieck zeichnen kann.", "Weil die Seite c mit 4 cm zu kurz ist.", "Weil α + β = 245° ist und die Winkelsumme im Dreieck nur 180° beträgt.", "Weil α und β gleich groß sein müssen."],
+      hint: "Wie groß ist die Winkelsumme im Dreieck?",
+      sol: "<p>In jedem Dreieck beträgt die Winkelsumme 180°. Hier sind α und β zusammen schon 110° + 135° = <b>245°</b>. Das ist mehr als 180°, für γ bliebe nichts übrig.</p><p>Eine Seite und zwei passende Winkel reichen sonst sehr wohl für ein Dreieck (WSW).</p>" },
+    { topic: "Daten & Diagramme", type: "rf", answers: [1, 0, 0, 1], stem: "<p>Hier siehst du ein Liniendiagramm zu den monatlichen Besucherzahlen eines Science Centers.</p>", fig: visitChart,
+      q: "Entscheide für jede Aussage, ob sie richtig oder falsch ist.",
+      rows: ["Im Februar und Oktober war die Anzahl der Besucher/innen gleich.", "Von Jänner bis April gab es jeden Monat einen Zuwachs.", "In sechs Monaten lag die Anzahl der Besucher/innen unter 3000.", "Im August gab es gleich viele Besucher/innen wie im September und Oktober zusammen."],
+      why: ["Februar ca. 2400, Oktober ca. 2000", "2000, 2400, 3200, 3400: jedes Mal mehr", "Jänner, Februar, Juli, August, September, Oktober", "August ca. 2500, September + Oktober ca. 1500 + 2000 = 3500"],
+      hint: "Lies bei jedem Monat die Höhe des Punktes ab.",
+      sol: "<p>Lies die Werte ab: Jän 2000, Feb 2400, Mär 3200, Apr 3400, Mai 3400, Jun 4100, Jul 2200, Aug 2500, Sep 1500, Okt 2000, Nov 3800, Dez 3800.</p>" },
+    { topic: "Geometrie", type: "rf", answers: [0, 0, 0, 1], stem: "<p>Valentin hat die Streckensymmetrale s von AB konstruiert und zwei weitere Punkte P und Q eingezeichnet.</p>", fig: symFig,
+      q: "Welche Aussage ist richtig, welche falsch?",
+      rows: ["Der Punkt P ist von A und B gleich weit entfernt, weil er auf der Streckensymmetrale s liegt.", "Der Punkt M ist der Mittelpunkt der Strecke AB, weil er gleichzeitig auf der Streckensymmetrale s und auf der Strecke AB liegt.", "Der Abstand von Q zu A und der Abstand von Q zu B sind verschieden, weil Q nicht auf der Streckensymmetralen s liegt.", "Es gibt einen Kreis mit Mittelpunkt M, der durch A, B und P geht, weil P auf der Streckensymmetralen s liegt."],
+      why: ["Jeder Punkt auf s hat zu A und B denselben Abstand.", "s steht normal auf AB und halbiert die Strecke.", "Nur Punkte auf s sind von A und B gleich weit entfernt.", "P liegt zwar auf s, ist aber näher bei M als A und B. Der Kreis um M durch A und B geht nicht durch P."],
+      hint: "Alle Punkte auf s sind von A und B gleich weit entfernt. Aber auch von M?",
+      sol: "<p>Die Streckensymmetrale besteht aus allen Punkten, die von A und B <b>gleich weit</b> entfernt sind. Sie halbiert AB im Mittelpunkt M.</p><p>Ein Kreis um M durch A und B hat den Radius MA. P hat von M aber einen anderen Abstand, deshalb liegt P nicht auf diesem Kreis.</p>" },
+    { topic: "Geometrie", type: "num", accept: [36], unit: "°", stem: "<p>In einem halbkreisförmigen Fenster sind vier Verstrebungen angebracht. Sie teilen das Fenster in gleich große Sektoren (siehe Abbildung).</p>", fig: windowFig,
+      q: "Wie groß ist der Winkel zwischen je zwei Verstrebungen?", hint: "Zähl die Sektoren. Es sind mehr als vier.",
+      sol: "<p>Vier Verstrebungen teilen den Halbkreis in <b>5</b> gleich große Sektoren. Ein Halbkreis hat 180°.</p><p class=\"formula\">180° : 5 = 36°</p>" },
+    { topic: "Anteile & Proportionen", type: "mc", correct: 1, stem: "<p>In der Schule wurden Schülerinnen und Schüler zu ihrem Lieblingsschulfach befragt. Das Ergebnis ist im Kreisdiagramm dargestellt. Das Umfrageergebnis wird auch als Prozentstreifen dargestellt, wobei die Zuordnung fehlt.</p>", fig: subjectFig,
+      q: "Welcher Abschnitt des Prozentstreifens entspricht dem Schulfach Mathematik an dieser Schule?", opts: ["Abschnitt A", "Abschnitt B", "Abschnitt C"],
+      hint: "Mathematik hat 60 %. Welcher Abschnitt ist 60 Prozentpunkte lang?",
+      sol: "<p>Mathematik: 60 %. Im Streifen ist A von 0 % bis 30 % (also 30 %), B von 30 % bis 90 % (also <b>60 %</b>) und C von 90 % bis 100 % (10 %).</p><p>Damit gehört Mathematik zu <b>B</b>. A ist Deutsch (30 %), C ist Englisch (10 %).</p>" },
+    { topic: "Anteile & Proportionen", type: "mc", correct: 3, stem: "<p>Ein Viertel der Klasse sind Mädchen.</p>", q: "Welche Deutung dieses Anteils ist richtig?",
+      opts: ["Das Verhältnis Mädchen : Buben ist 1 : 4.", "Es gibt viermal so viele Buben wie Mädchen.", "Vier Prozent der Kinder sind Mädchen.", "Eines von vier Kindern ist ein Mädchen."],
+      hint: "Ein Viertel gehört zum Ganzen, nicht zum Rest.",
+      sol: "<p>Ein Viertel heißt: Von 4 Kindern ist <b>1</b> ein Mädchen, die anderen 3 sind Buben. Das Verhältnis Mädchen : Buben ist also 1 : 3, nicht 1 : 4. Ein Viertel sind 25 %, nicht 4 %.</p>" },
+    { topic: "Geometrie", type: "num", accept: [3], unit: "", stem: "<p>Im Bild siehst du einen aus Würfeln zusammengesetzten Körper im Schrägriss und einen Plan davon. Die Zahlen im Plan geben die Anzahl der übereinandergestapelten Würfel an.</p>", fig: cubeFig,
+      q: "Welche Zahl muss im Plan statt x stehen?", hint: "Wie hoch ist der Turm in der Mitte hinten?",
+      sol: "<p>Der Turm in der hinteren Reihe in der Mitte besteht aus <b>3</b> übereinandergestapelten Würfeln. Links hinten sind 2, rechts hinten 1 und vorne links 1 Würfel. Es gilt x = 3.</p>" },
+    { topic: "Anteile & Proportionen", type: "mc", correct: 2, stem: `<p>Die Klassen 3A und 3B stimmen darüber ab, ob sie in diesem Schuljahr eine Wintersportwoche oder eine Sommersportwoche durchführen.</p><p>Die Lehrerin sagt, dass ${F(2, 5)} der 3A-Klasse für die Wintersportwoche gestimmt haben.</p><p>Auf dem Tafelbild ist ein Teil des Ergebnisses der Abstimmung dargestellt.</p>`, fig: boardTable,
+      q: "Wie viele Stimmen der 3A wurden für die Sommersportwoche abgegeben?", opts: ["3", "5", "15", "20"], hint: "10 Stimmen sind zwei Fünftel. Wie viele Kinder hat die 3A insgesamt?",
+      sol: `<p>${F(2, 5)} der Klasse sind 10 Kinder. Ein Fünftel sind 5 Kinder, die ganze Klasse hat 5 · 5 = <b>25</b> Kinder.</p><p>Für Sommer haben 25 − 10 = <b>15</b> Kinder gestimmt.</p>` },
+    { topic: "Daten & Diagramme", type: "mc", correct: 0, stem: "<p>Die Klasse 1b erhebt die Schuhgrößen der einzelnen Schülerinnen und Schüler und stellt sie in einer Tabelle dar.</p><p>Simon behauptet: „Die Hälfte der Kinder in der 1b-Klasse hat die Schuhgröße 36.“</p>", fig: shoeTable,
+      q: "Warum ist Simons Aussage falsch?",
+      opts: ["Es sind 21 Kinder in der Klasse, aber nur 10 haben Schuhgröße 36. Das ist weniger als die Hälfte.", "Schuhgröße 36 ist die kleinste Schuhgröße, deshalb haben sie nicht die meisten.", "Die Hälfte von 21 ist 9, und 10 ist mehr als 9.", "Schuhgröße 37 hat genauso viele Striche wie Schuhgröße 36."],
+      hint: "Zähl alle Striche zusammen und halbiere.",
+      sol: "<p>Striche: 36 → 10, 37 → 5, 38 → 0, 39 → 3, 40 → 2, 41 → 1. Das sind 10 + 5 + 0 + 3 + 2 + 1 = <b>21 Kinder</b>.</p><p>Die Hälfte von 21 ist 10,5. Mit 10 Kindern hat Größe 36 also weniger als die Hälfte.</p>" },
+    { topic: "Terme & Gleichungen", type: "mc", correct: 2, stem: `<p>Die Gleichung 3 · x − 2 = ${F(1, 3)} wird umgeformt.</p>`, q: "Welche Umformung ist richtig?", big: true,
+      opts: ["(3 · x − 2) · 3 = 0", `x − 2 = ${F(1, 3)} : 3`, `3 · x = ${F(1, 3)} + 2`, `1 · x = ${F(1, 3)}`],
+      hint: "Was musst du auf beiden Seiten tun, damit die −2 verschwindet?",
+      sol: `<p>Auf beiden Seiten +2 rechnen (Gegenoperation von −2):</p><p class="formula">3 · x − 2 + 2 = ${F(1, 3)} + 2 → 3 · x = ${F(1, 3)} + 2</p><p>Bei der zweiten Möglichkeit würde nur das 3x geteilt, nicht aber die 2.</p>` },
+    { topic: "Zahlen & Sachaufgaben", type: "mc", correct: 1, stem: "<p>Sind zwei Zahlen durch 3 teilbar, so ist auch ihre Summe immer durch 3 teilbar. Ein Beispiel: 6 + 9 = 15.</p><p>Die Umkehrung (wenn die Summe durch 3 teilbar ist, so sind das auch ihre Summanden) gilt jedoch <u>nicht</u> immer.</p>", q: "Zeige dies, indem du eine geeignete Zerlegung für 15 angibst.",
+      opts: ["15 = 6 + 9", "15 = 7 + 8", "15 = 12 + 3", "15 = 0 + 15"], hint: "Gesucht: zwei Zahlen mit Summe 15, die beide nicht durch 3 teilbar sind.",
+      sol: "<p>Bei 6 + 9, 12 + 3 und 0 + 15 sind beide Summanden durch 3 teilbar, das zeigt nichts. Bei <b>7 + 8</b> ist die Summe 15 durch 3 teilbar, die Summanden 7 und 8 aber nicht. Das ist das Gegenbeispiel.</p>" },
+    { topic: "Daten & Diagramme", type: "rf", answers: [0, 0, 1, 1], stem: "<p>Zwei Geschwister, Jana und Ali, müssen um 8:00 Uhr in der 2 km entfernten Schule sein. Ali geht zu Fuß von zuhause weg und braucht eine halbe Stunde. Jana nimmt das Fahrrad. Die Grafik zeigt die Weg-Zeit-Verläufe der Geschwister.</p>", fig: wayFig,
+      q: "Welche Aussage ist richtig, welche falsch?",
+      rows: ["Jana und Ali kommen zur gleichen Zeit in der 2 km entfernten Schule an.", "Jana braucht nur 10 Minuten in die Schule, da sie mit dem Fahrrad schneller unterwegs ist.", "Jana nimmt mit dem Fahrrad einen kürzeren Weg und ist deshalb schneller in der Schule.", "Jana fährt mit dem Fahrrad 10 Minuten später weg als Ali."],
+      why: ["Beide Linien enden um 08:00 bei 2 km.", "Jana fährt um 07:50 los und kommt um 08:00 an.", "Beide legen 2 km zurück.", "Jana fährt um 07:50 weg, Ali um 07:30: 20 Minuten später."],
+      hint: "Lies Start und Ende jeder Linie ab.",
+      sol: "<p>Ali startet um 07:30 und kommt um 08:00 an (30 min). Jana startet um 07:50 (<b>20</b> Minuten nach Ali) und kommt ebenfalls um 08:00 an (10 min). Beide fahren die gleiche Strecke von 2 km.</p>" },
+    { topic: "Geometrie", type: "num", accept: [14.78], unit: "cm", stem: "<p>Bei der Abbildung handelt es sich um ein gleichschenkeliges Dreieck.</p>", fig: isoFig, q: "Berechne den Umfang des Dreiecks.",
+      hint: "Gleichschenkelig heißt: zwei Seiten sind gleich lang.",
+      sol: "<p>Die beiden Schenkel sind gleich lang, je 5,39 cm. Die Basis ist 4 cm.</p><p class=\"formula\">u = 2 · 5,39 + 4 = 10,78 + 4 = 14,78 cm</p>" },
+    { topic: "Bruchrechnen", type: "mc", correct: 1, stem: "", q: `Welche der folgenden Zahlen liegt zwischen ${F(1, 3)} und ${F(1, 2)} ?`, grid: true, big: true,
+      opts: [F(2, 3), "0,4", F(3, 5), "0,25"], hint: "Wandle in Dezimalzahlen um: 1/3 ≈ 0,33 und 1/2 = 0,5.",
+      sol: `<p>${F(1, 3)} ≈ 0,33 und ${F(1, 2)} = 0,5. Gesucht ist eine Zahl dazwischen.</p><p>${F(2, 3)} ≈ 0,67 und ${F(3, 5)} = 0,6 sind zu groß, 0,25 ist zu klein. Es passt <b>0,4</b>.</p>` },
+    { topic: "Daten & Diagramme", type: "mc", correct: 2, stem: "<p>Gegeben sind folgende Zahlen: 11, 20, 7, 7, 3, 11, 10, 1, 18, 11, 22</p>", q: "Der Durchschnitt ist 11, weil ...",
+      opts: ["... 11 der häufigste Wert ist.", "... die Zahl 11 in der Mitte steht.", "... 11 die Summe dieser Zahlen dividiert durch 11 ist.", "... 11 der Unterschied zwischen dem ersten und letzten Wert ist."],
+      hint: "Wie berechnet man den Durchschnitt?",
+      sol: "<p>Durchschnitt = Summe : Anzahl. Die Summe ist 11 + 20 + 7 + 7 + 3 + 11 + 10 + 1 + 18 + 11 + 22 = 121, es sind 11 Zahlen: 121 : 11 = <b>11</b>.</p><p>Dass 11 auch der häufigste Wert ist, ist reiner Zufall. Das wäre der Modus, nicht der Durchschnitt.</p>" },
+    { topic: "Zahlen & Sachaufgaben", type: "mc", correct: 2, stem: "<p>Lisa beginnt mit ihrer Hausübung um 14:30 Uhr. Sie benötigt dafür 1 Stunde 50 Minuten.</p>", q: "Wie spät ist es, wenn sie mit der Hausübung fertig ist?",
+      opts: ["15:20 Uhr", "15:30 Uhr", "16:20 Uhr", "16:30 Uhr"], hint: "Rechne zuerst bis zur vollen Stunde.",
+      sol: "<p>14:30 + 1 Stunde = 15:30. Dazu 50 Minuten: 15:30 + 30 min = 16:00, plus weitere 20 min = <b>16:20 Uhr</b>.</p>" },
+    { topic: "Geometrie", type: "mc", correct: 0, stem: "<p>Ein Rechteck mit den Seitenlängen x und y wird durch eine Diagonale in zwei rechtwinklige Dreiecke geteilt.</p>", fig: rectDiag,
+      q: "Mit welcher Formel kann die Fläche des färbig dargestellten Dreiecks berechnet werden?", grid: true, big: true,
+      opts: [`A = ${F("x · y", 2)}`, "A = 2 · x + y", "A = x · y · 2", `A = ${F("x + y", 2)}`], hint: "Das Dreieck ist die Hälfte des Rechtecks.",
+      sol: `<p>Das Rechteck hat die Fläche x · y. Die Diagonale halbiert es, das Dreieck ist also halb so groß:</p><p class="formula">A = ${F("x · y", 2)}</p><p>Probe mit x = 6 und y = 4: Rechteck 24, Dreieck 12. Die Formel gibt 6 · 4 : 2 = 12 ✓</p>` },
+    { topic: "Anteile & Proportionen", type: "num", accept: [75], unit: "%", stem: "<p>Aus einer Zeitungsumfrage: „Drei Viertel der Befragten kennen die Schauspielerin.“</p>", q: "Gib drei Viertel in Prozent an.",
+      hint: "Ein Viertel sind 25 %.",
+      sol: `<p>Ein Viertel ${F(1, 4)} = 25 %. Drei Viertel sind 3 · 25 % = <b>75 %</b>.</p>` },
+    { topic: "Daten & Diagramme", type: "rf", answers: [1, 0, 1, 0], stem: "<p>Eine österreichische Tageszeitung hat folgende Diagramme zur Datensicherung in Österreich veröffentlicht. Diese Diagramme sind vereinfacht dargestellt.</p>", fig: dataFig,
+      q: "Welche Aussage zu diesen Diagrammen ist richtig, welche falsch?",
+      rows: ["81 % der Befragten sind sehr besorgt um ihre persönlichen Daten.", "3 % der Befragten machten keine Angabe dazu, wie sehr sie besorgt sind.", "Am häufigsten gaben die Befragten an, dass Finanzdaten (Steuerdaten) besonders schützenswert sind.", "4 % der Befragten gaben an, dass nichts besonders schützenswert ist."],
+      why: ["Sehr besorgt sind nur 18 %.", "Im Kreisdiagramm: Keine Angabe 3 %.", "Am häufigsten genannt: Kontodaten (94 %), Finanzdaten nur 68 %.", "Im Balkendiagramm: Nichts 4 %."],
+      hint: "Lies die Werte direkt im jeweiligen Diagramm ab.",
+      sol: "<p>Kreisdiagramm: Sehr besorgt 18 %, Eher besorgt 35 %, Eher nicht besorgt 9 %, Nicht besorgt 35 %, Keine Angabe 3 %. Balkendiagramm: Kontodaten 94, Kreditkarten 84, Finanzdaten 68, Krankenakten 57, Private Kontakte 47, Nichts 4.</p>" },
+    { topic: "Bruchrechnen", type: "mc", correct: 1, stem: `<p>Martin kürzte ${F(30, 42)} zweimal und rechnete dabei so: ${F(30, 42)} = ${F(10, 14)} = ${F(5, 7)}</p>`, q: "Warum kann er nicht mehr weiter kürzen? Er kann nicht mehr weiter kürzen, weil ...",
+      opts: [`... ${F(5, 7)} kleiner als 1 ist.`, "... 5 und 7 teilerfremd sind.", "... 5 und 7 ungerade Zahlen sind.", `... ${F(5, 7)} ein echter Bruch ist.`],
+      hint: "Gibt es eine Zahl, durch die sich 5 und 7 beide teilen lassen (außer 1)?",
+      sol: `<p>Man kann nur kürzen, wenn Zähler und Nenner einen gemeinsamen Teiler (größer als 1) haben. 5 und 7 haben außer 1 keinen: Sie sind <b>teilerfremd</b>.</p><p>Dass ${F(5, 7)} kleiner als 1 ist, spielt keine Rolle: ${F(3, 9)} ist auch kleiner als 1 und lässt sich trotzdem zu ${F(1, 3)} kürzen.</p>` },
+    { topic: "Daten & Diagramme", type: "rf", answers: [0, 0, 1, 1], stem: "<p>Die Grafik zeigt, wie viel Meter Lara bis zu einer gewissen Uhrzeit auf ihrem Schulweg zurückgelegt hat. Sie geht um 07:10 Uhr los und kommt um 07:30 Uhr an.</p>", fig: laraFig,
+      q: "Welche Aussage zur Grafik ist richtig, welche falsch?",
+      rows: ["Lara geht den gesamten Schulweg über gleich schnell.", "Lara hat nach zehn Minuten 400 m zurückgelegt.", "Lara geht bis 07:25 Uhr 700 m weit.", "Der gesamte Schulweg ist 1 000 m lang."],
+      why: ["Der Graph ist eine gerade Linie.", "Um 07:20 Uhr zeigt der Graph 400 m.", "Um 07:25 Uhr zeigt der Graph 600 m.", "Der Graph endet um 07:30 Uhr bei 800 m."],
+      hint: "Lies bei der jeweiligen Uhrzeit die Höhe des Graphen ab.",
+      sol: "<p>Alle 5 Minuten kommen 200 m dazu: 07:15 → 200 m, 07:20 → 400 m, 07:25 → 600 m, 07:30 → 800 m. Der Weg ist 800 m lang.</p>" },
+    { topic: "Terme & Gleichungen", type: "rf", answers: [0, 1, 1, 0], stem: "<p>In der Abbildung ist der Plan eines Grundstücks zu erkennen.</p>", fig: plotFig,
+      q: "Welcher Term berechnet die Fläche des Grundstücks richtig, welcher falsch?",
+      rows: ["a · b + e · d", "a · b − e · f", "b · c + e · f", "b · c − e · f"],
+      why: ["Rechteck oben (a · b) plus Rechteck unten (e · d)", "Man müsste e · f dazuzählen, nicht abziehen: das passt nicht.", "Das große Rechteck b · c enthält die fehlende Ecke schon, e · f muss abgezogen werden.", "Großes Rechteck b · c minus die fehlende Ecke e · f"],
+      hint: "Teile das Grundstück in zwei Rechtecke, oder ergänze es zu einem großen Rechteck.",
+      sol: "<p>Zwei Wege: Das Grundstück besteht aus einem Rechteck oben (a · b) und einem Rechteck unten rechts (e · d), also a · b + e · d.</p><p>Oder: großes Rechteck b · c, davon die fehlende Ecke links unten (e · f) abziehen: b · c − e · f.</p>" },
+    { topic: "Terme & Gleichungen", type: "mc", correct: 1, stem: `<p class="formula">2x + 5 = 17</p>`, q: "Begründe, warum 12 nicht die Lösung dieser Gleichung sein kann.",
+      opts: ["Weil 12 eine gerade Zahl ist und 17 ungerade.", "Weil 2 · 12 + 5 = 29 ist und nicht 17.", "Weil 12 größer als 5 ist.", "Weil 12 + 5 = 17 ist und nicht 2 · 12 + 5."],
+      hint: "Setz 12 für x ein und rechne.",
+      sol: "<p>Einsetzen: 2 · 12 + 5 = 24 + 5 = <b>29</b>. Das ist nicht 17, also stimmt die Gleichung nicht.</p><p>Richtig wäre x = 6, denn 2 · 6 + 5 = 17.</p>" },
+  ];
+  T23.forEach((t, i) => (t.id = i + 1));
+  const POOLS = {
+    "2025": { name: "iKM 2025", tasks: T25, minutes: 45 },
+    "2023": { name: "iKM 2023", tasks: T23, minutes: 45 },
+  };
+  let T = T25;
+  const TITLES = ["Stromdiagramm: Monate vergleichen", "Dreieck aus drei Seiten", "5/8 : 2", "Körpergrößen: Durchschnitt", "Gleichung zum Laufwettbewerb", "B − 1 = M deuten", "Freibad-Rechnung lesen", "Winkelsumme im Dreieck", "Lage zweier Kreise", "Bruch kürzen", "Dreiecksfläche im Rechteck", "Proportionaler Graph", "Orchester: Anteile", "Projektgruppen: Diagramm wählen", "3,05 Millionen in Ziffern", "Hochschul-Diagramm lesen", "Äpfel: nicht proportional", "Term a : b deuten", "Helfer: Anteil vergleichen", "Himbeer-Graph lesen", "Umfang einer Figur", "Dreiecksfläche im Raster", "Schwimmbecken: Volumen", "Kreise: 40 % weiß", "Trapez und Rechteck", "3/4 : 5/7 begründen"];
+
+  const TOPICS = {
+    "Daten & Diagramme": ["Diagramme und Daten lesen", "Lies zuerst Achsen und Legende, dann vergleichst du die Werte."],
+    "Geometrie": ["Geometrie: Figuren, Flächen, Winkel", "Merke: Winkelsumme 180°, Dreieck = Grundlinie · Höhe : 2, Umfang = alle Außenseiten."],
+    "Bruchrechnen": ["Bruchrechnen", "Durch eine Zahl kleiner als 1 dividieren macht das Ergebnis größer. Kürzen heißt: oben und unten durch dieselbe Zahl."],
+    "Terme & Gleichungen": ["Terme und Gleichungen", "Setz Zahlen ein und prüfe, ob die Gleichung zur Geschichte passt."],
+    "Anteile & Proportionen": ["Anteile, Prozent und Proportionalität", "Vergleiche immer mit dem Ganzen. Proportional heißt: doppelte Menge, doppelter Preis."],
+    "Zahlen & Sachaufgaben": ["Große Zahlen und Sachaufgaben", "Lies die Angabe genau und kontrolliere dein Ergebnis mit einer Probe."],
+  };
+  const TKEYS = Object.keys(TOPICS);
+  const SHORT = { "Daten & Diagramme": "Diagramme", "Geometrie": "Geometrie", "Bruchrechnen": "Brüche", "Terme & Gleichungen": "Terme", "Anteile & Proportionen": "Anteile", "Zahlen & Sachaufgaben": "Zahlen" };
+  const PASS = 0.7; let LIMIT = 45 * 60 * 1000;
+  const KEY = "ikm-test-v1";
+  let run = null, sel = null, tick = null, askEnd = false, selPool = "2025";
+  try { const r = localStorage.getItem(KEY); if (r) run = JSON.parse(r); } catch (e) { run = null; }
+  if (run && !POOLS[run.pool || "2025"]) run = null;
+  if (run) { run.pool = run.pool || "2025"; T = POOLS[run.pool].tasks; LIMIT = POOLS[run.pool].minutes * 60000; selPool = run.pool; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(run)); } catch (e) { /* ohne Speicher weiter */ } };
+  const byId = (id) => T.find((t) => t.id === id);
+  const $ = (id) => document.getElementById(id);
+  const shuffle = (a) => { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
+  const cur = () => (run.round === 2 ? run.q[run.qpos] : run.order[run.pos]);
+  const left = () => run.start + LIMIT - Date.now();
+  const mmss = (ms) => { const t = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; };
+  function show(v) { ["start", "task", "result", "review"].forEach((k) => ($(k).hidden = k !== v)); window.scrollTo(0, 0); }
+  function grade(t, g) {
+    if (g == null) return false;
+    if (t.type === "mc") return g === t.correct;
+    if (t.type === "rf") return g.every((v, i) => v === t.answers[i]);
+    if (t.type === "months") return g.length === t.need && g.every((m) => t.correct.includes(m));
+    if (t.type === "num") {
+      let raw = String(g).replace(/\s/g, "");
+      if (t.thousands) raw = raw.replace(/\./g, "");
+      raw = raw.replace(",", ".").replace(/[a-zA-Z²€]+$/, "");
+      const v = parseFloat(raw); return !isNaN(v) && t.accept.some((a) => Math.abs(a - v) < 1e-9);
+    }
+    return false;
+  }
+  function inputHTML(t, given, review) {
+    const dis = review ? "disabled" : "";
+    if (t.type === "mc") return `<div class="opts ${t.grid ? "grid2" : ""}">${t.opts.map((o, i) => {
+      let cls = ""; if (review) { if (i === t.correct) cls = "ok"; else if (i === given) cls = "bad"; }
+      return `<button class="opt ${t.figopts ? "figopt" : ""} ${cls}" data-o="${i}" aria-pressed="${given === i}" ${dis}><span class="l">${"ABCD"[i]}</span><span style="${t.big ? "font-size:30px" : ""}">${o}</span></button>`; }).join("")}</div>`;
+    if (t.type === "rf") {
+      const c = t.cols || ["Richtig", "Falsch"];
+      return `<div class="tblwrap"><table class="rf"><thead><tr><th>Aussage</th><th class="c">${c[0]}</th><th class="c">${c[1]}</th>${review ? "<th>Warum?</th>" : ""}</tr></thead><tbody>${t.rows.map((r, i) => {
+        const g = given ? given[i] : null, cls = review ? (g === t.answers[i] ? "ok" : "bad") : "";
+        return `<tr class="${cls}"><td>${r}</td>${[0, 1].map((k) => `<td class="c"><button data-r="${i}" data-k="${k}" aria-pressed="${g === k}" aria-label="${c[k]}: ${esc(r)}" ${dis}>${g === k ? "✓" : ""}</button></td>`).join("")}${review ? `<td class="why"><b>${c[t.answers[i]]}</b>: ${t.why[i]}</td>` : ""}</tr>`; }).join("")}</tbody></table></div>`;
+    }
+    if (t.type === "num") return `<div class="numrow"><label for="numIn">Deine Antwort:</label><input id="numIn" inputmode="decimal" autocomplete="off" value="${given != null ? esc(given) : ""}" ${dis}> <span>${t.unit || ""}</span></div>`;
+    if (t.type === "months") return `<div class="months">${t.opts.map((m, i) => {
+      const g = given || [], on = g.includes(i); let cls = ""; if (review) { if (t.correct.includes(i)) cls = "ok"; else if (on) cls = "bad"; }
+      return `<button class="${cls}" data-m="${i}" aria-pressed="${on}" ${dis}>${m}</button>`; }).join("")}</div>${review ? "" : `<p class="sub" style="margin-top:8px">Wähle genau zwei Monate.</p>`}`;
+    return "";
+  }
+  const taskBody = (t, given, review) => `<div class="stem">${t.stem || ""}</div>${t.fig ? `<div class="fig">${t.fig}</div>` : ""}<div class="q">${t.q}</div>${inputHTML(t, given, review)}`;
+
+  function renderStart() {
+    clearInterval(tick); askEnd = false;
+    if (run && !run.end && left() <= 0) { finish(true); return; }
+    const going = run && !run.end, done = run && run.end;
+    const P = POOLS[going ? run.pool : selPool];
+    const cards = going ? "" : `<h2 class="sec" style="margin:0 0 10px">Jahrgang wählen</h2><div class="pools">${Object.keys(POOLS).sort().reverse().map((k) => `<button class="pool" data-pool="${k}" aria-pressed="${k === selPool}"><b>${POOLS[k].name}</b><span>${POOLS[k].tasks.length} Aufgaben · ${POOLS[k].minutes} Min</span></button>`).join("")}</div>`;
+    $("start").innerHTML = `
+      <h1>iKM-Übung Mathematik</h1>
+      <p class="lead">Teste dich unter Prüfungsbedingungen. Die Auswertung bekommst du erst ganz am Ende.</p>
+      ${cards}
+      <div class="facts"><div class="fact"><b>${P.tasks.length}</b><span>Aufgaben</span></div><div class="fact"><b>${P.minutes} min</b><span>Zeit</span></div><div class="fact"><b>Zufällig</b><span>Reihenfolge</span></div></div>
+      ${going ? `<p class="hello">${P.name}: Dein Test läuft noch. Du hast noch <b>${mmss(left())}</b> Minuten.</p><button class="btn" data-act="resume">${run.round === 2 ? "Weitermachen bei den übersprungenen Aufgaben" : `Weitermachen bei Aufgabe ${run.pos + 1}`}</button><p class="other"><button class="link" data-act="abandon">Test abbrechen und anderen Jahrgang wählen</button></p>`
+        : `<button class="btn" data-act="start">${P.name} starten</button>${done ? `<p class="other"><button class="link" data-act="result">Letzte Auswertung ansehen</button></p>` : ""}`}
+      <ul class="rules"><li>Nimm Papier und Stift zum Rechnen.</li><li>Die Uhr startet mit dem Test und lässt sich nicht anhalten.</li><li>Du kannst Aufgaben überspringen. Wenn am Ende noch Zeit ist, kommst du noch einmal zu ihnen.</li><li>Nach Ablauf der Zeit oder nach der letzten Aufgabe wird dein Test automatisch ausgewertet.</li><li>Deine Antworten bleiben auf diesem Gerät.</li></ul>`;
+    show("start");
+  }
+
+  function renderTask() {
+    if (left() <= 0) { finish(true); return; }
+    const t = byId(cur()), r2 = run.round === 2; askEnd = false;
+    sel = t.type === "rf" ? Array(t.rows.length).fill(null) : t.type === "months" ? [] : null;
+    $("pos").textContent = r2 ? `Übersprungen: ${run.qpos + 1} von ${run.q.length}` : `Aufgabe ${run.pos + 1} von ${T.length}`;
+    $("trackfill").style.width = (r2 ? run.qpos / run.q.length : run.pos / T.length) * 100 + "%";
+    const last = r2 ? run.qpos === run.q.length - 1 : run.pos === T.length - 1;
+    $("sheet").innerHTML = `${r2 && run.qpos === 0 ? `<p class="confirm" style="margin:0 0 8px"><b>Du hast noch Zeit.</b> Hier sind die Aufgaben, die du übersprungen hast.</p>` : ""}${taskBody(t, sel, false)}<p class="warn" id="warn"></p>
+      <div class="foot"><button class="link" data-act="skip">${r2 ? "Offen lassen" : "Überspringen"}</button><button class="btn" data-act="next">${last ? "Fertig, abgeben" : "Weiter"}</button></div>`;
+    show("task");
+    clearInterval(tick);
+    const upd = () => { const l = left(); if (l <= 0) { finish(true); return; } const c = $("clock"); c.textContent = "Noch " + mmss(l); c.classList.toggle("low", l <= 5 * 60 * 1000); };
+    upd(); tick = setInterval(upd, 1000);
+  }
+  function next(skip) {
+    if (left() <= 0) { finish(true); return; }
+    const t = byId(cur());
+    let g = sel; if (t.type === "num") g = $("numIn").value.trim();
+    if (!skip) {
+      const missing = t.type === "mc" ? g === null : t.type === "rf" ? g.some((v) => v === null) : t.type === "months" ? g.length !== t.need : !g;
+      if (missing) { $("warn").textContent = t.type === "rf" ? "Entscheide dich bei jeder Zeile oder überspringe die Aufgabe." : t.type === "months" ? "Wähle genau zwei Monate oder überspringe die Aufgabe." : "Gib eine Antwort ein oder überspringe die Aufgabe."; return; }
+    }
+    run.ans[t.id] = skip ? null : g; run.ok[t.id] = skip ? false : grade(t, g);
+    if (run.round === 2) { run.qpos++; if (run.qpos >= run.q.length) finish(false); else { save(); renderTask(); } return; }
+    run.pos++;
+    if (run.pos >= T.length) {
+      const open = run.order.filter((id) => run.ans[id] === null);
+      if (open.length && left() > 0) { run.round = 2; run.q = open; run.qpos = 0; save(); renderTask(); } else finish(false);
+    } else { save(); renderTask(); }
+  }
+  function finish(timeout) {
+    clearInterval(tick);
+    if (timeout) run.reached = run.round === 2 ? T.length : run.pos;
+    for (const id of run.order) if (!(id in run.ans)) { run.ans[id] = null; run.ok[id] = false; }
+    run.pos = T.length; run.timeout = timeout; run.end = timeout ? run.start + LIMIT : Date.now(); save();
+    renderResult();
+  }
+
+  function renderResult() {
+    clearInterval(tick);
+    const n = T.length, r = T.filter((t) => run.ok[t.id]).length;
+    const stats = TKEYS.map((k) => { const l = T.filter((t) => t.topic === k), ok = l.filter((t) => run.ok[t.id]).length; return { k, ok, n: l.length, p: l.length ? ok / l.length : 0 }; }).filter((x) => x.n > 0);
+    const got = stats.filter((s) => s.p >= PASS).length;
+    const used = run.end - run.start, mins = Math.floor(used / 60000), secs = Math.floor((used % 60000) / 1000);
+    const notReached = run.timeout ? T.length - run.reached : 0;
+    $("result").innerHTML = `
+      <div class="topnav"><button class="home" data-act="home">Startseite</button></div>
+      <h1 style="margin-top:12px">Deine Auswertung</h1><p class="who">${POOLS[run.pool].name}</p>
+      <div class="score"><span class="big">${r}</span><span class="of">von ${n} Aufgaben richtig</span></div>
+      <p class="meta">${run.timeout ? `Die ${LIMIT / 60000} Minuten sind abgelaufen${notReached ? `, ${notReached} ${notReached === 1 ? "Aufgabe" : "Aufgaben"} blieb${notReached === 1 ? "" : "en"} offen` : ""}.` : `Du hast ${mins} min ${secs} s von ${LIMIT / 60000} Minuten gebraucht.`} Du hast ${got} von ${stats.length} Kompetenzen erreicht.</p>
+      <h2 class="sec" style="margin-top:8px">Deine Kompetenzen</h2>
+      <ul class="comps">${stats.map((s) => { const ok = s.p >= PASS; return `<li><div class="h"><span>${TOPICS[s.k][0]}</span><span class="chip ${ok ? "ok" : "bad"}">${ok ? "Erreicht" : "Noch ausbaufähig"}</span></div><div class="b ${ok ? "ok-b" : "bad-b"}"><div style="width:${s.p * 100}%"></div></div><p class="n">${s.ok} von ${s.n} Aufgaben richtig</p>${ok ? "" : `<p class="tip">${TOPICS[s.k][1]}</p>`}</li>`; }).join("")}</ul>
+      <div class="row" style="margin-top:28px"><button class="btn" data-act="solutions">Lösungen ansehen</button><button class="btn ghost" data-act="home">Neuer Test</button></div>`;
+    show("result");
+  }
+  function renderReview(i) {
+    const id = run.order[i], t = byId(id), g = run.ans[id], ok = run.ok[id];
+    const msg = g == null ? (run.timeout && i >= run.reached ? "Für diese Aufgabe war keine Zeit mehr." : "Diese Aufgabe hast du übersprungen.") : ok ? "Deine Antwort war richtig." : t.type === "num" ? `Deine Antwort: ${esc(g)} ${t.unit || ""}. Das stimmt leider nicht.` : "Deine Antwort war leider nicht richtig.";
+    $("review").innerHTML = `
+      <div class="bar"><div class="barrow"><button class="home" data-act="home">Startseite</button><span style="margin-right:auto">Aufgabe ${i + 1} von ${T.length}</span><button class="link" data-act="result" style="padding:0">Zur Auswertung</button></div></div>
+      ${taskBody(t, g, true)}
+      <p class="yours ${ok ? "ok" : "bad"}">${msg}</p>
+      <div class="sol"><h3>So geht’s</h3>${t.sol}</div>
+      <div class="foot"><button class="link" ${i > 0 ? `data-rev="${i - 1}"` : "disabled"}>Vorherige</button><button class="btn" ${i < T.length - 1 ? `data-rev="${i + 1}"` : `data-act="result"`}>${i < T.length - 1 ? "Nächste" : "Zur Auswertung"}</button></div>`;
+    show("review");
+  }
+
+  document.addEventListener("click", (e) => {
+    const el = e.target.closest("button"); if (!el || el.disabled) return;
+    const a = el.dataset.act;
+    if (el.dataset.pool) { selPool = el.dataset.pool; renderStart(); return; }
+    if (a === "abandon") { run = null; try { localStorage.removeItem(KEY); } catch (e) { /* egal */ } renderStart(); return; }
+    if (a === "start") { T = POOLS[selPool].tasks; LIMIT = POOLS[selPool].minutes * 60000; run = { pool: selPool, order: shuffle(T.map((t) => t.id)), pos: 0, ans: {}, ok: {}, start: Date.now(), end: null }; save(); renderTask(); return; }
+    if (a === "resume") { renderTask(); return; }
+    if (a === "home") { renderStart(); return; }
+    if (a === "result") { renderResult(); return; }
+    if (a === "solutions") { renderReview(0); return; }
+    if (a === "next") { next(false); return; }
+    if (a === "skip") { next(true); return; }
+    if (el.dataset.rev !== undefined) { renderReview(+el.dataset.rev); return; }
+    if ($("task").hidden) return;
+    if ($("warn")) $("warn").textContent = "";
+    if (el.dataset.o !== undefined) { sel = +el.dataset.o; document.querySelectorAll("#sheet .opt").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.o === sel))); return; }
+    if (el.dataset.r !== undefined) { const i = +el.dataset.r, k = +el.dataset.k; sel[i] = k; document.querySelectorAll(`#sheet [data-r="${i}"]`).forEach((b) => { const on = +b.dataset.k === k; b.setAttribute("aria-pressed", String(on)); b.textContent = on ? "✓" : ""; }); return; }
+    if (el.dataset.m !== undefined) { const i = +el.dataset.m, p = sel.indexOf(i); if (p >= 0) sel.splice(p, 1); else sel.push(i); el.setAttribute("aria-pressed", String(sel.includes(i))); return; }
+  });
+  const current = () => (!$("task").hidden ? "task" : "other");
+  document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "numIn") next(false); });
+
+  if (run && (!run.order || run.order.length !== T.length)) run = null;
+  if (run && !run.end && left() <= 0) finish(true);
+  else if (run && run.end) renderResult();
+  else renderStart();
+})();
+</script>
+</body>
+</html>
