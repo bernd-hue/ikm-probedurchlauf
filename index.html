@@ -230,6 +230,7 @@ table.t tr.click:hover td { background: var(--accent-soft); }
   </section>
   <section id="result" hidden></section>
   <section id="review" hidden></section>
+  <section id="teacher" hidden></section>
 </div>
 <script>
 (function () {
@@ -703,7 +704,7 @@ table.t tr.click:hover td { background: var(--accent-soft); }
   const cur = () => (run.round === 2 ? run.q[run.qpos] : run.order[run.pos]);
   const left = () => run.start + LIMIT - Date.now();
   const mmss = (ms) => { const t = Math.max(0, Math.ceil(ms / 1000)); return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`; };
-  function show(v) { ["start", "task", "result", "review"].forEach((k) => ($(k).hidden = k !== v)); window.scrollTo(0, 0); }
+  function show(v) { ["start", "task", "result", "review", "teacher"].forEach((k) => ($(k).hidden = k !== v)); window.scrollTo(0, 0); }
   function grade(t, g) {
     if (g == null) return false;
     if (t.type === "mc") return g === t.correct;
@@ -736,6 +737,96 @@ table.t tr.click:hover td { background: var(--accent-soft); }
   }
   const taskBody = (t, given, review) => `<div class="stem">${t.stem || ""}</div>${t.fig ? `<div class="fig">${t.fig}</div>` : ""}<div class="q">${t.q}</div>${inputHTML(t, given, review)}`;
 
+  /* ---------- Ergebnis-Code und Lehrer-Ansicht ---------- */
+  const b64e = (s) => btoa(encodeURIComponent(s).replace(/%([0-9A-F]{2})/g, (m, p) => String.fromCharCode(parseInt(p, 16)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const b64d = (s) => { let t = s.replace(/-/g, "+").replace(/_/g, "/"); while (t.length % 4) t += "="; return decodeURIComponent(atob(t).split("").map((c) => "%" + ("0" + c.charCodeAt(0).toString(16)).slice(-2)).join("")); };
+  function makeCode() {
+    const r = T.map((t) => (!(t.id in run.ans) ? "." : run.ans[t.id] == null ? "-" : run.ok[t.id] ? "1" : "0")).join("");
+    return "IKM-" + b64e(JSON.stringify({ v: 2, n: run.name || "Unbekannt", k: run.klasse || "", p: run.pool, s: run.start, e: run.end, t: run.timeout ? 1 : 0, r }));
+  }
+  function readCode(c) {
+    try {
+      const o = JSON.parse(b64d(c.replace(/^IKM-/, "")));
+      if (!o.n || !o.r || !POOLS[o.p] || o.r.length !== POOLS[o.p].tasks.length) return null;
+      return { name: String(o.n), klasse: String(o.k || ""), pool: o.p, start: +o.s, end: +o.e, timeout: !!o.t, r: String(o.r), code: c };
+    } catch (e) { return null; }
+  }
+  const isTeacher = () => location.hash === "#lehrer";
+  const CKEY = "ikm-lehrer-codes";
+  let tcodes = [], tPool = null, tKlasse = "Alle", tDetail = null, tAskDel = false, tAskAll = false, tMsg = "";
+  try { tcodes = JSON.parse(localStorage.getItem(CKEY) || "[]") || []; } catch (e) { tcodes = []; }
+  const saveCodes = () => { try { localStorage.setItem(CKEY, JSON.stringify(tcodes)); } catch (e) { /* ohne Speicher weiter */ } };
+  const fmtDur = (ms) => { const s = Math.max(0, Math.round(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")} min`; };
+  const fmtDay = (ms) => { const d = new Date(ms); return d.toLocaleDateString("de-AT") + " " + d.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" }); };
+  const plain = (h) => h.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+  const tStats = (tasks, r) => TKEYS.map((k) => { const l = tasks.filter((t) => t.topic === k), ok = l.filter((t) => r[t.id - 1] === "1").length; return { k, ok, n: l.length, p: l.length ? ok / l.length : 0 }; }).filter((x) => x.n > 0);
+  const score = (e) => (e.r.match(/1/g) || []).length;
+  const keyOf = (e) => e.name + "|" + e.klasse + "|" + e.pool + "|" + e.start;
+  function tEntries() { const seen = new Set(), out = []; tcodes.forEach((c) => { const o = readCode(c); if (o && !seen.has(keyOf(o))) { seen.add(keyOf(o)); out.push(o); } }); return out; }
+
+  function renderTeacher() {
+    clearInterval(tick);
+    const all = tEntries(), pools = [...new Set(all.map((e) => e.pool))].sort().reverse();
+    if (!tPool || !pools.includes(tPool)) tPool = pools[0] || null;
+    const ofPool = all.filter((e) => e.pool === tPool), klassen = [...new Set(ofPool.map((e) => e.klasse || "ohne Klasse"))].sort();
+    if (tKlasse !== "Alle" && !klassen.includes(tKlasse)) tKlasse = "Alle";
+    const ents = ofPool.filter((e) => tKlasse === "Alle" || (e.klasse || "ohne Klasse") === tKlasse).sort((a, b) => a.name.localeCompare(b.name, "de"));
+    const tasks = tPool ? POOLS[tPool].tasks : [];
+    const avg = ents.length ? ents.reduce((s, e) => s + score(e), 0) / ents.length : 0;
+    const reach = TKEYS.map((k) => ({ k, n: ents.filter((e) => { const x = tStats(tasks, e.r).find((s) => s.k === k); return x && x.p >= PASS; }).length })).filter((x) => tasks.some((t) => t.topic === x.k));
+    const rate = tasks.map((t) => ({ t, p: ents.length ? ents.filter((e) => e.r[t.id - 1] === "1").length / ents.length : 0 })).sort((a, b) => a.p - b.p);
+    const det = tDetail && ents.find((e) => keyOf(e) === tDetail);
+    $("teacher").innerHTML = `
+      <div class="topnav"><button class="home" data-act="thome">Startseite</button></div>
+      <h1 style="margin-top:8px">Lehrer-Ansicht</h1>
+      <section class="t-sec codes"><h2>Ergebnis-Codes einfügen</h2>
+        <p class="sub">Die Codes der Schülerinnen und Schüler hier einfügen, mehrere auf einmal sind möglich (eine Zeile pro Code oder durch Leerzeichen getrennt).</p>
+        <textarea id="codeIn" placeholder="IKM-…"></textarea>
+        <div class="row" style="margin-top:8px"><button class="btn" data-act="tadd">Auswerten</button><span class="msg" id="codeMsg">${esc(tMsg)}</span></div>
+      </section>
+      ${all.length ? `
+      <section class="t-sec"><h2>Auswertung</h2>
+        <div class="row" style="gap:16px;margin-bottom:8px">
+          <label style="font-weight:700;font-size:15px">Jahrgang <select id="poolSel">${pools.map((k) => `<option value="${k}" ${k === tPool ? "selected" : ""}>${POOLS[k].name}</option>`).join("")}</select></label>
+          ${klassen.length > 1 ? `<label style="font-weight:700;font-size:15px">Klasse <select id="klassSel"><option>Alle</option>${klassen.map((k) => `<option ${k === tKlasse ? "selected" : ""}>${esc(k)}</option>`).join("")}</select></label>` : ""}
+        </div>
+        <div class="cards"><div class="cardn"><b>${ents.length}</b><span>Abgaben</span></div><div class="cardn"><b>${avg.toFixed(1).replace(".", ",")}</b><span>von ${tasks.length} Punkten im Schnitt</span></div><div class="cardn"><b>${Math.round((avg / tasks.length) * 100)} %</b><span>Lösungsquote</span></div><div class="cardn"><b>${ents.filter((e) => e.timeout).length}</b><span>Zeit abgelaufen</span></div></div>
+        <h2 style="font-size:20px;margin:22px 0 8px">Kompetenzen der Klasse</h2>
+        <div class="tw"><table class="t"><thead><tr><th>Kompetenzbereich</th><th>erreicht (ab 70 %)</th><th>noch nicht erreicht</th></tr></thead><tbody>${reach.map((x) => `<tr><td>${TOPICS[x.k][0]}</td><td><span class="yes">${x.n} von ${ents.length}</span></td><td><span class="no">${ents.length - x.n}</span></td></tr>`).join("")}</tbody></table></div>
+        <h2 style="font-size:20px;margin:26px 0 8px">Schülerinnen und Schüler</h2>
+        <p class="sub">✓ = Kompetenzbereich erreicht (mindestens 70 % richtig). Auf eine Zeile tippen für die Details.</p>
+        <div class="tw"><table class="t"><thead><tr><th>Name</th><th>Klasse</th><th>Punkte</th><th>Zeit</th>${reach.map((x) => `<th>${TOPICS[x.k][0].split(" ")[0]}</th>`).join("")}</tr></thead><tbody>${ents.map((e) => { const st = tStats(tasks, e.r); return `<tr class="click" data-det="${esc(keyOf(e))}"><td><b>${esc(e.name)}</b></td><td>${esc(e.klasse)}</td><td class="n">${score(e)} / ${tasks.length}</td><td>${e.timeout ? "abgelaufen" : fmtDur(e.end - e.start)}</td>${reach.map((x) => { const s = st.find((q) => q.k === x.k); return `<td class="n">${s && s.p >= PASS ? `<span class="yes">✓</span>` : `<span class="no">✗</span>`}</td>`; }).join("")}</tr>`; }).join("")}</tbody></table></div>
+        ${det ? `<div class="detail"><h3>${esc(det.name)}${det.klasse ? ", " + esc(det.klasse) : ""}</h3>
+          <p class="msg" style="margin:0 0 10px">${score(det)} von ${tasks.length} richtig, begonnen ${fmtDay(det.start)}, ${det.timeout ? "Zeit abgelaufen" : fmtDur(det.end - det.start)}.</p>
+          <p style="margin:0 0 6px"><b>Erreicht:</b> ${tStats(tasks, det.r).filter((s) => s.p >= PASS).map((s) => TOPICS[s.k][0]).join(", ") || "keiner"}<br><b>Noch nicht erreicht:</b> ${tStats(tasks, det.r).filter((s) => s.p < PASS).map((s) => TOPICS[s.k][0]).join(", ") || "keiner"}</p>
+          <ul class="tasks">${tasks.map((t) => { const c = det.r[t.id - 1]; return `<li><span class="m" style="color:${c === "1" ? "var(--ok)" : "var(--bad)"}">${c === "1" ? "✓" : c === "0" ? "✗" : "–"}</span>Aufgabe ${t.id}, ${TOPICS[t.topic][0]}</li>`; }).join("")}</ul>
+          <p class="msg" style="margin:0 0 10px">– = übersprungen oder keine Zeit mehr</p>
+          <div class="row"><button class="btn ghost small" data-act="tclose">Schließen</button>${tAskDel ? `<button class="btn small" data-act="tdel">Wirklich entfernen? Nochmal tippen</button>` : `<button class="link" data-act="taskdel">Diese Abgabe entfernen</button>`}</div></div>` : ""}
+        <div class="row" style="margin-top:14px"><button class="btn ghost" data-act="tsv">Tabelle kopieren (für Excel)</button><span class="msg" id="tsvMsg"></span></div>
+        <textarea id="tsvBox" hidden style="width:100%;min-height:120px;margin-top:8px"></textarea>
+        <h2 style="font-size:20px;margin:26px 0 8px">Die schwierigsten Aufgaben</h2>
+        <div class="tw"><table class="t"><thead><tr><th>Aufgabe</th><th>Bereich</th><th>richtig gelöst</th></tr></thead><tbody>${rate.slice(0, 6).map((x) => `<tr><td style="white-space:normal;min-width:220px">${x.t.id}. ${esc(plain(x.t.q || x.t.stem).slice(0, 70))}</td><td>${TOPICS[x.t.topic][0]}</td><td class="n">${Math.round(x.p * 100)} %</td></tr>`).join("")}</tbody></table></div>
+      </section>
+      <p style="margin-top:40px">${tAskAll ? `<button class="btn small" data-act="tdelall">Wirklich alle löschen? Nochmal tippen</button>` : `<button class="link" data-act="taskall">Alle Abgaben auf diesem Gerät löschen</button>`}</p>`
+      : `<p class="msg" style="margin-top:24px">Noch keine Abgaben ausgewertet.</p>`}`;
+    show("teacher");
+    const ps = $("poolSel"); if (ps) ps.onchange = () => { tPool = ps.value; tKlasse = "Alle"; tDetail = null; renderTeacher(); };
+    const ks = $("klassSel"); if (ks) ks.onchange = () => { tKlasse = ks.value; tDetail = null; renderTeacher(); };
+  }
+  function tsv() {
+    const all = tEntries().filter((e) => e.pool === tPool && (tKlasse === "Alle" || (e.klasse || "ohne Klasse") === tKlasse)).sort((a, b) => a.name.localeCompare(b.name, "de"));
+    const tasks = POOLS[tPool].tasks, ks = TKEYS.filter((k) => tasks.some((t) => t.topic === k));
+    const head = ["Name", "Klasse", "Jahrgang", "Datum", "Punkte", "von", "Zeit", ...ks.map((k) => TOPICS[k][0]), ...tasks.map((t) => "A" + t.id)];
+    const rows = all.map((e) => [e.name, e.klasse, POOLS[e.pool].name, fmtDay(e.start), score(e), tasks.length, e.timeout ? "abgelaufen" : fmtDur(e.end - e.start), ...tStats(tasks, e.r).map((s) => `${s.p >= PASS ? "erreicht" : "nicht erreicht"} (${s.ok}/${s.n})`), ...tasks.map((t) => (e.r[t.id - 1] === "1" ? 1 : 0))]);
+    return [head, ...rows].map((r) => r.join("\t")).join("\n");
+  }
+  async function copyText(text, box, msgEl) {
+    try { await navigator.clipboard.writeText(text); msgEl.textContent = "Kopiert."; }
+    catch (e) { if (box) { box.hidden = false; box.value = text; box.focus(); box.select(); } msgEl.textContent = "Bitte den markierten Text mit Strg+C kopieren."; }
+  }
+  let person = { name: "", klasse: "" };
+  try { const q = JSON.parse(localStorage.getItem("ikm-uebung-person") || "null"); if (q && q.name) person = q; } catch (e) { /* leer */ }
+  const readPerson = () => { if ($("inName")) { person = { name: $("inName").value.replace(/\s+/g, " ").trim().slice(0, 60), klasse: ($("inKlasse").value || "").trim().slice(0, 12) }; try { localStorage.setItem("ikm-uebung-person", JSON.stringify(person)); } catch (e) { /* egal */ } } };
   function renderStart() {
     clearInterval(tick); askEnd = false;
     if (run && !run.end && left() <= 0) { finish(true); return; }
@@ -748,7 +839,7 @@ table.t tr.click:hover td { background: var(--accent-soft); }
       ${cards}
       <div class="facts"><div class="fact"><b>${P.tasks.length}</b><span>Aufgaben</span></div><div class="fact"><b>${P.minutes} min</b><span>Zeit</span></div><div class="fact"><b>Zufällig</b><span>Reihenfolge</span></div></div>
       ${going ? `<p class="hello">${P.name}: Dein Test läuft noch. Du hast noch <b>${mmss(left())}</b> Minuten.</p><button class="btn" data-act="resume">${run.round === 2 ? "Weitermachen bei den übersprungenen Aufgaben" : `Weitermachen bei Aufgabe ${run.pos + 1}`}</button><p class="other"><button class="link" data-act="abandon">Test abbrechen und anderen Jahrgang wählen</button></p>`
-        : `<button class="btn" data-act="start">${P.name} starten</button>${done ? `<p class="other"><button class="link" data-act="result">Letzte Auswertung ansehen</button></p>` : ""}`}
+        : `<div class="form" style="max-width:520px;margin:0 0 16px"><label>Dein Name<input id="inName" autocomplete="name" maxlength="60" value="${esc(person.name)}"></label><label>Klasse<input id="inKlasse" maxlength="12" placeholder="z. B. 3a" value="${esc(person.klasse)}"></label></div><p class="warn" id="startWarn"></p><button class="btn" data-act="start">${P.name} starten</button>${done ? `<p class="other"><button class="link" data-act="result">Letzte Auswertung ansehen</button></p>` : ""}`}
       <ul class="rules"><li>Nimm Papier und Stift zum Rechnen.</li><li>Die Uhr startet mit dem Test und lässt sich nicht anhalten.</li><li>Du kannst Aufgaben überspringen. Wenn am Ende noch Zeit ist, kommst du noch einmal zu ihnen.</li><li>Nach Ablauf der Zeit oder nach der letzten Aufgabe wird dein Test automatisch ausgewertet.</li><li>Deine Antworten bleiben auf diesem Gerät.</li></ul>`;
     show("start");
   }
@@ -805,6 +896,7 @@ table.t tr.click:hover td { background: var(--accent-soft); }
       <p class="meta">${run.timeout ? `Die ${LIMIT / 60000} Minuten sind abgelaufen${notReached ? `, ${notReached} ${notReached === 1 ? "Aufgabe" : "Aufgaben"} blieb${notReached === 1 ? "" : "en"} offen` : ""}.` : `Du hast ${mins} min ${secs} s von ${LIMIT / 60000} Minuten gebraucht.`} Du hast ${got} von ${stats.length} Kompetenzen erreicht.</p>
       <h2 class="sec" style="margin-top:8px">Deine Kompetenzen</h2>
       <ul class="comps">${stats.map((s) => { const ok = s.p >= PASS; return `<li><div class="h"><span>${TOPICS[s.k][0]}</span><span class="chip ${ok ? "ok" : "bad"}">${ok ? "Erreicht" : "Noch ausbaufähig"}</span></div><div class="b ${ok ? "ok-b" : "bad-b"}"><div style="width:${s.p * 100}%"></div></div><p class="n">${s.ok} von ${s.n} Aufgaben richtig</p>${ok ? "" : `<p class="tip">${TOPICS[s.k][1]}</p>`}</li>`; }).join("")}</ul>
+      <section class="t-sec codes" style="margin-top:28px"><h2>Ergebnis an deine Lehrkraft schicken</h2><p class="sub">Kopiere diesen Code und schick ihn deiner Lehrkraft (zum Beispiel im Chat oder per Teams). Darin stehen dein Name und dein Ergebnis.</p><textarea id="myCode" readonly rows="5">${makeCode()}</textarea><div class="row" style="margin-top:8px"><button class="btn" data-act="copycode">Code kopieren</button><span class="msg" id="copyMsg"></span></div></section>
       <div class="row" style="margin-top:28px"><button class="btn" data-act="solutions">Lösungen ansehen</button><button class="btn ghost" data-act="home">Neuer Test</button></div>`;
     show("result");
   }
@@ -821,11 +913,28 @@ table.t tr.click:hover td { background: var(--accent-soft); }
   }
 
   document.addEventListener("click", (e) => {
-    const el = e.target.closest("button"); if (!el || el.disabled) return;
+    const el = e.target.closest("button, tr[data-det]"); if (!el || el.disabled) return;
+    if (el.dataset.det) { tDetail = el.dataset.det; tAskDel = false; renderTeacher(); return; }
     const a = el.dataset.act;
-    if (el.dataset.pool) { selPool = el.dataset.pool; renderStart(); return; }
+    if (a === "copycode") { copyText($("myCode").value, $("myCode"), $("copyMsg")); return; }
+    if (a === "thome") { location.hash = ""; return; }
+    if (a === "tadd") {
+      const found = ($("codeIn").value.match(/IKM-[A-Za-z0-9_-]+/g) || []);
+      const ok = found.filter((c) => readCode(c)), before = tEntries().length;
+      ok.forEach((c) => { if (!tcodes.includes(c)) tcodes.push(c); });
+      saveCodes(); const added = tEntries().length - before;
+      tMsg = !found.length ? "Kein Code gefunden. Er beginnt mit IKM-." : `${added} neu, ${found.length - ok.length ? (found.length - ok.length) + " ungültig, " : ""}${ok.length - added} schon vorhanden.`;
+      renderTeacher(); return;
+    }
+    if (a === "tclose") { tDetail = null; tAskDel = false; renderTeacher(); return; }
+    if (a === "taskdel") { tAskDel = true; renderTeacher(); return; }
+    if (a === "tdel") { const e0 = tEntries().find((x) => keyOf(x) === tDetail); if (e0) tcodes = tcodes.filter((c) => { const o = readCode(c); return !o || keyOf(o) !== tDetail; }); saveCodes(); tDetail = null; tAskDel = false; renderTeacher(); return; }
+    if (a === "taskall") { tAskAll = true; renderTeacher(); return; }
+    if (a === "tdelall") { tcodes = []; saveCodes(); tAskAll = false; tDetail = null; renderTeacher(); return; }
+    if (a === "tsv") { copyText(tsv(), $("tsvBox"), $("tsvMsg")); return; }
+    if (el.dataset.pool) { readPerson(); selPool = el.dataset.pool; renderStart(); return; }
     if (a === "abandon") { run = null; try { localStorage.removeItem(KEY); } catch (e) { /* egal */ } renderStart(); return; }
-    if (a === "start") { T = POOLS[selPool].tasks; LIMIT = POOLS[selPool].minutes * 60000; run = { pool: selPool, order: shuffle(T.map((t) => t.id)), pos: 0, ans: {}, ok: {}, start: Date.now(), end: null }; save(); renderTask(); return; }
+    if (a === "start") { readPerson(); if (person.name.length < 2) { $("startWarn").textContent = "Bitte gib deinen Namen ein."; $("inName").focus(); return; } T = POOLS[selPool].tasks; LIMIT = POOLS[selPool].minutes * 60000; run = { name: person.name, klasse: person.klasse, pool: selPool, order: shuffle(T.map((t) => t.id)), pos: 0, ans: {}, ok: {}, start: Date.now(), end: null }; save(); renderTask(); return; }
     if (a === "resume") { renderTask(); return; }
     if (a === "home") { renderStart(); return; }
     if (a === "result") { renderResult(); return; }
@@ -842,10 +951,12 @@ table.t tr.click:hover td { background: var(--accent-soft); }
   const current = () => (!$("task").hidden ? "task" : "other");
   document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "numIn") next(false); });
 
+  window.addEventListener("hashchange", () => { if (isTeacher()) renderTeacher(); else renderStart(); });
   if (run && (!run.order || run.order.length !== T.length)) run = null;
   if (run && !run.end && left() <= 0) finish(true);
   else if (run && run.end) renderResult();
   else renderStart();
+  if (isTeacher()) renderTeacher();
 })();
 </script>
 </body>
